@@ -1,0 +1,343 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Stage {
+  id          Int          @id @default(autoincrement())
+  slug        String       @unique
+  name        String
+  nameEn      String?
+  nameJp      String?
+  romaji      String?
+  order       Int
+  isSpecial   Boolean      @default(false)
+  color       String       @default("#64748b")
+  description String?
+  digimon     Digimon[]
+  mediaStages MediaStage[]
+}
+
+model Attribute {
+  id          Int       @id @default(autoincrement())
+  slug        String    @unique
+  name        String
+  nameJp      String?
+  color       String    @default("#64748b")
+  description String?
+  details     String?
+  digimon     Digimon[]
+}
+
+model DigimonType {
+  id          Int               @id @default(autoincrement())
+  slug        String            @unique
+  name        String
+  nameJp      String?
+  description String?
+  digimon     DigimonTypeLink[]
+}
+
+model Family {
+  id          Int             @id @default(autoincrement())
+  slug        String          @unique
+  name        String
+  abbr        String?
+  nameJp      String?
+  color       String          @default("#64748b")
+  description String?
+  digimon     DigimonFamily[]
+}
+
+model Group {
+  id          Int           @id @default(autoincrement())
+  slug        String        @unique
+  name        String
+  nameJp      String?
+  description String?
+  legendary   Boolean       @default(false)
+  members     GroupMember[]
+}
+
+model Digimon {
+  id              Int      @id @default(autoincrement())
+  number          Int      @unique
+  slug            String   @unique
+  name            String
+  nameJp          String?
+  romaji          String?
+  pronunciation   String?
+  otherNames      String?
+  imageUrl        String?
+  imageCredit     String?
+  summary         String?
+  nameMeaning     String?
+  designOrigin    String?
+  physical        String?
+  personality     String?
+  combat          String?
+  powerLevel      String?
+  firstAppearance String?
+  firstYear       Int?
+  reviewStatus    String   @default("draft")
+  featured        Boolean  @default(false)
+  viewCount       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  stageId     Int?
+  stage       Stage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  attributeId Int?
+  attribute   Attribute? @relation(fields: [attributeId], references: [id], onDelete: SetNull)
+
+  baseId      Int?
+  base        Digimon?  @relation("Variants", fields: [baseId], references: [id], onDelete: SetNull)
+  variants    Digimon[] @relation("Variants")
+  variantKind String?
+
+  types          DigimonTypeLink[]
+  families       DigimonFamily[]
+  groups         GroupMember[]
+  attacks        Attack[]
+  abilities      Ability[]
+  trivia         Trivia[]
+  appearances    Appearance[]
+  evolutionsFrom Evolution[]        @relation("EvolutionFrom")
+  evolutionsTo   Evolution[]        @relation("EvolutionTo")
+  partnerIn      EvolutionPartner[]
+  citations      Citation[]
+
+  @@index([name])
+  @@index([stageId])
+  @@index([attributeId])
+  @@index([featured])
+  @@index([viewCount])
+  @@index([createdAt])
+}
+
+model DigimonTypeLink {
+  digimonId Int
+  typeId    Int
+  digimon   Digimon     @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+  type      DigimonType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  @@id([digimonId, typeId])
+  @@index([typeId])
+}
+
+model DigimonFamily {
+  digimonId Int
+  familyId  Int
+  status    String  @default("unconfirmed")
+  sourceId  Int?
+  digimon   Digimon @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+  family    Family  @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  source    Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@id([digimonId, familyId])
+  @@index([familyId])
+}
+
+model GroupMember {
+  digimonId Int
+  groupId   Int
+  role      String?
+  digimon   Digimon @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+  group     Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([digimonId, groupId])
+  @@index([groupId])
+}
+
+model Attack {
+  id          Int     @id @default(autoincrement())
+  digimonId   Int
+  name          String
+  localizedName String?
+  description String?
+  status      String  @default("official")
+  sourceId    Int?
+  order       Int     @default(0)
+  digimon     Digimon @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+  source      Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([digimonId])
+  @@index([name])
+}
+
+model Ability {
+  id          Int     @id @default(autoincrement())
+  digimonId   Int
+  name        String
+  description String?
+  status      String  @default("official")
+  sourceId    Int?
+  digimon     Digimon @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+  source      Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([digimonId])
+  @@index([name])
+}
+
+model Trivia {
+  id        Int     @id @default(autoincrement())
+  digimonId Int
+  text      String
+  status    String  @default("official")
+  sourceId  Int?
+  digimon   Digimon @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+  source    Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([digimonId])
+}
+
+model Media {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  nameJp      String?
+  kind        String
+  year        Int?
+  endYear     Int?
+  platform    String?
+  description String?
+  color       String   @default("#6366f1")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  features          MediaFeature[]
+  stages            MediaStage[]
+  appearances       Appearance[]
+  evolutionContexts EvolutionContext[]
+
+  @@index([kind])
+}
+
+model MediaFeature {
+  id       Int     @id @default(autoincrement())
+  mediaId  Int
+  category String
+  title    String
+  body     String
+  status   String  @default("media")
+  sourceId Int?
+  order    Int     @default(0)
+  media    Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  source   Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([mediaId])
+}
+
+model MediaStage {
+  mediaId   Int
+  stageId   Int
+  localName String?
+  notes     String?
+  media     Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  stage     Stage   @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@id([mediaId, stageId])
+}
+
+model Appearance {
+  id        Int     @id @default(autoincrement())
+  digimonId Int
+  mediaId   Int
+  role      String?
+  form      String?
+  notes     String?
+  status    String  @default("media")
+  sourceId  Int?
+  digimon   Digimon @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+  media     Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  source    Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([digimonId, mediaId])
+  @@index([mediaId])
+}
+
+model Evolution {
+  id           Int                @id @default(autoincrement())
+  fromId       Int
+  toId         Int
+  kind         String             @default("normal")
+  status       String             @default("unconfirmed")
+  requirements String?
+  notes        String?
+  sourceId     Int?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  from         Digimon            @relation("EvolutionFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to           Digimon            @relation("EvolutionTo", fields: [toId], references: [id], onDelete: Cascade)
+  source       Source?            @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  partners     EvolutionPartner[]
+  contexts     EvolutionContext[]
+
+  @@unique([fromId, toId, kind])
+  @@index([toId])
+  @@index([kind])
+  @@index([status])
+}
+
+model EvolutionPartner {
+  evolutionId Int
+  digimonId   Int
+  evolution   Evolution @relation(fields: [evolutionId], references: [id], onDelete: Cascade)
+  digimon     Digimon   @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+
+  @@id([evolutionId, digimonId])
+  @@index([digimonId])
+}
+
+model EvolutionContext {
+  id           Int       @id @default(autoincrement())
+  evolutionId  Int
+  mediaId      Int
+  requirements String?
+  notes        String?
+  status       String    @default("media")
+  sourceId     Int?
+  evolution    Evolution @relation(fields: [evolutionId], references: [id], onDelete: Cascade)
+  media        Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  source       Source?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([evolutionId, mediaId])
+  @@index([mediaId])
+}
+
+model Source {
+  id        Int      @id @default(autoincrement())
+  title     String
+  url       String?
+  publisher String?
+  kind      String   @default("other")
+  notes     String?
+  createdAt DateTime @default(now())
+
+  citations         Citation[]
+  evolutions        Evolution[]
+  evolutionContexts EvolutionContext[]
+  appearances       Appearance[]
+  attacks           Attack[]
+  abilities         Ability[]
+  trivia            Trivia[]
+  mediaFeatures     MediaFeature[]
+  families          DigimonFamily[]
+}
+
+model Citation {
+  id        Int     @id @default(autoincrement())
+  sourceId  Int
+  digimonId Int
+  field     String
+  url       String?
+  note      String?
+  source    Source  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  digimon   Digimon @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+
+  @@index([digimonId])
+}
