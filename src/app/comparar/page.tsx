@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { db } from "@/lib/db";
 import { Container, Missing, PageHeader } from "@/components/ui";
 import { DigimonAvatar } from "@/components/digimon-avatar";
-import { AttributeBadge, EvoKindBadge, Pill, StageBadge, StatusBadge } from "@/components/badges";
+import { AttributeBadge, EvoKindBadge, FamilyBadge, Pill, StageBadge, StatusBadge } from "@/components/badges";
 import { DigimonPickerNav } from "@/components/digimon-picker-nav";
 import { paramList } from "@/lib/utils";
 
@@ -41,7 +41,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
     ["Atributo", (d) => <AttributeBadge attribute={d.attribute} />, (d) => d.attribute?.slug ?? ""],
     ["Tipo", (d) => (d.types.length ? d.types.map((t) => t.type.name).join(", ") : null), (d) => d.types.map((t) => t.typeId).sort().join()],
     ["Família", (d) => (d.families.length ? (
-      <span className="flex flex-wrap gap-1">{d.families.map((f) => <Pill key={f.familyId} color={f.family.color}>{f.family.name}{f.status !== "official" ? " (?)" : ""}</Pill>)}</span>
+      <span className="flex flex-wrap gap-1">{d.families.map((f) => <FamilyBadge key={f.familyId} family={f.family} link={false} suffix={f.status !== "official" ? " (?)" : ""} />)}</span>
     ) : null), (d) => d.families.map((f) => f.familyId).sort().join()],
     ["Grupo", (d) => (d.groups.length ? d.groups.map((g) => g.group.name).join(", ") : null)],
     ["Habilidades", (d) => (d.abilities.length ? d.abilities.map((a) => a.name).join(", ") : null)],

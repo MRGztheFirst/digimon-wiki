@@ -115,3 +115,9 @@ h1, h2, h3 { text-wrap: balance; }
 
 .prose-wiki p { line-height: 1.75; }
 .prose-wiki p + p { margin-top: 0.8rem; }
+
+.loading-bar { animation: loading-bar 1.1s ease-in-out infinite; }
+@keyframes loading-bar {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}

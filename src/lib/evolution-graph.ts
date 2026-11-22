@@ -9,7 +9,7 @@ const nodeSelect = {
   nameJp: true,
   imageUrl: true,
   stage: { select: { name: true, nameEn: true, order: true, color: true, isSpecial: true } },
-  attribute: { select: { name: true, color: true } },
+  attribute: { select: { name: true, color: true, slug: true } },
 } as const;
 
 const edgeInclude = {
@@ -108,6 +108,7 @@ export async function buildEvolutionGraph(rootId: number, maxDepth = 12): Promis
     stageColor: d.stage?.color ?? "#64748b",
     stageSpecial: d.stage?.isSpecial ?? false,
     attrName: d.attribute?.name?.split(" (")[0] ?? null,
+    attrSlug: d.attribute?.slug ?? null,
     attrColor: d.attribute?.color ?? null,
   }));
 

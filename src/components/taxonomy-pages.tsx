@@ -8,6 +8,13 @@ import { DigimonGrid } from "./digimon-card";
 import { paragraphs } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { StatusBadge } from "./badges";
+import { AttributeIcon, FamilyIcon } from "./icons";
+
+function TermIcon({ kind, slug, name, color, size }: { kind: TaxonomyKind; slug: string; name: string; color?: string | null; size: number }) {
+  if (kind === "atributos" && slug !== "no-data") return <AttributeIcon slug={slug} name={name} size={size} />;
+  if (kind === "familias") return <FamilyIcon slug={slug} name={name} size={size} />;
+  return <span className="shrink-0 rounded-[2px]" style={{ width: Math.max(6, size / 4), height: size, background: color ?? "var(--muted)" }} />;
+}
 
 export async function TaxonomyIndexPage({ kind }: { kind: TaxonomyKind }) {
   const t = TAXONOMIES[kind];
@@ -49,16 +56,17 @@ function TermGrid({ items, kind }: { items: Awaited<ReturnType<typeof listTaxono
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((i) => (
-        <Link key={i.slug} href={`/${kind}/${i.slug}`} className="card group flex flex-col p-5 transition hover:border-fg/40" style={{ borderTop: `3px solid ${i.color ?? "#64748b"}` }}>
-          <div className="flex items-start justify-between gap-2">
-            <div>
+        <Link key={i.slug} href={`/${kind}/${i.slug}`} className="card group flex flex-col p-5 transition hover:border-fg/40">
+          <div className="flex items-start justify-between gap-3">
+            <TermIcon kind={kind} slug={i.slug} name={i.name} color={i.color} size={40} />
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 font-display text-lg font-semibold group-hover:text-primary">
-                {i.legendary && <Crown size={16} className="text-yellow-400" />}
+                {i.legendary && <Crown size={15} className="text-primary" />}
                 {i.name}
               </div>
               {i.subtitle && <div className="text-xs text-muted">{i.subtitle}</div>}
             </div>
-            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">{i.count}</span>
+            <span className="font-mono text-xs text-muted">{i.count}</span>
           </div>
           {i.description && <p className="mt-2 line-clamp-3 text-sm text-muted">{i.description}</p>}
         </Link>
@@ -80,9 +88,7 @@ export async function TaxonomyTermPage({ kind, slug, page }: { kind: TaxonomyKin
 
   return (
     <div>
-      <PageHeader crumbs={[[`/${kind}`, t.title], [null, term.name]]} eyebrow={t.singular} title={term.name} subtitle={term.subtitle}>
-        <div className="h-1 w-24 rounded-full" style={{ background: term.color ?? "#64748b" }} />
-      </PageHeader>
+      <PageHeader crumbs={[[`/${kind}`, t.title], [null, term.name]]} eyebrow={t.singular} title={<span className="flex items-center gap-4"><TermIcon kind={kind} slug={term.slug} name={term.name} color={term.color} size={56} />{term.name}</span>} subtitle={term.subtitle} />
       <Container className="grid gap-10 py-10 lg:grid-cols-[1fr_260px]">
         <div className="min-w-0 space-y-10">
           {(term.description || term.details) && (
@@ -103,13 +109,13 @@ export async function TaxonomyTermPage({ kind, slug, page }: { kind: TaxonomyKin
         </div>
         <aside>
           <div className="card sticky top-20 p-4">
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted">{t.title}</div>
+            <div className="label mb-2">{t.title}</div>
             <ul className="scrollbar-thin max-h-[70vh] space-y-0.5 overflow-auto">
               {siblings.map((s) => (
                 <li key={s.slug}>
                   <Link href={`/${kind}/${s.slug}`} className={`flex items-center justify-between rounded-[4px] px-2 py-1.5 text-sm hover:bg-surface-2 ${s.slug === slug ? "bg-surface-2 font-semibold" : "text-muted"}`}>
                     <span className="flex items-center gap-2 truncate">
-                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: s.color ?? "#64748b" }} />
+                      <TermIcon kind={kind} slug={s.slug} name={s.name} color={s.color} size={18} />
                       {s.name}
                     </span>
                     <span className="text-xs">{s.count}</span>

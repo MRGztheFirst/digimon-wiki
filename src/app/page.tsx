@@ -8,6 +8,7 @@ import { DigimonAvatar } from "@/components/digimon-avatar";
 import { Container, Section, SeeAll } from "@/components/ui";
 import { MEDIA_KINDS } from "@/lib/constants";
 import { yearRange } from "@/lib/utils";
+import { AttributeIcon, FamilyIcon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -175,7 +176,7 @@ export default async function Home() {
               {attributes.map((a) => (
                 <li key={a.id}>
                   <Link href={`/atributos/${a.slug}`} className="group flex items-center gap-3 border-b border-line/70 py-2.5 text-sm">
-                    <span className="h-3 w-3 shrink-0" style={{ background: a.color }} />
+                    <span className="flex w-6 justify-center">{a.slug === "no-data" ? <span className="h-px w-3 bg-muted" /> : <AttributeIcon slug={a.slug} name={a.name} size={22} />}</span>
                     <span className="flex-1 group-hover:text-primary">{a.name}</span>
                     <span className="font-mono text-xs text-muted">{a._count.digimon}</span>
                   </Link>
@@ -188,7 +189,7 @@ export default async function Home() {
               {families.map((f) => (
                 <li key={f.id}>
                   <Link href={`/familias/${f.slug}`} className="group flex items-center gap-3 border-b border-line/70 py-2.5 text-sm">
-                    <span className="w-7 font-mono text-[11px] text-muted">{f.abbr}</span>
+                    <FamilyIcon slug={f.slug} name={f.name} size={22} />
                     <span className="flex-1 group-hover:text-primary">{f.name}</span>
                     <span className="font-mono text-xs text-muted">{f._count.digimon}</span>
                   </Link>

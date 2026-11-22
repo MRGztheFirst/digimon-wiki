@@ -5,7 +5,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight, BookMarked, GitBranch, Info, Penc
 import { db } from "@/lib/db";
 import { cardSelect } from "@/lib/queries";
 import { DigimonAvatar } from "@/components/digimon-avatar";
-import { AttributeBadge, EvoKindBadge, Pill, ReviewBadge, StageBadge, StatusBadge } from "@/components/badges";
+import { AttributeBadge, EvoKindBadge, FamilyBadge, Pill, ReviewBadge, StageBadge, StatusBadge } from "@/components/badges";
 import { DigimonCard, DigimonChip, EmptyState } from "@/components/digimon-card";
 import { Breadcrumbs, Container, Field, Missing, Section } from "@/components/ui";
 import { MEDIA_KINDS, MEDIA_KIND_KEYS, REVIEW_STATUSES, mediaKindOf, reviewOf } from "@/lib/constants";
@@ -191,7 +191,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                   <span className="flex flex-wrap gap-2">
                     {d.families.map((f) => (
                       <span key={f.familyId} className="inline-flex items-center gap-1.5">
-                        <Pill color={f.family.color} href={`/familias/${f.family.slug}`}>{f.family.name}</Pill>
+                        <FamilyBadge family={f.family} />
                         {f.status !== "official" && <StatusBadge status={f.status} compact />}
                       </span>
                     ))}

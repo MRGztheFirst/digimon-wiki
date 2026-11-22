@@ -12,6 +12,7 @@ export type GNode = {
   stageColor: string;
   stageSpecial: boolean;
   attrName: string | null;
+  attrSlug: string | null;
   attrColor: string | null;
 };
 

@@ -7,6 +7,7 @@ import type { GEdge, GraphData, GraphFilters, GNode } from "@/lib/graph-types";
 import { COL_GAP, NODE_H, NODE_W, filterGraph, layoutGraph } from "@/lib/graph-layout";
 import { EVOLUTION_KINDS, MEDIA_KINDS, STATUSES, evoKindOf, mediaKindOf, statusOf } from "@/lib/constants";
 import { DigimonAvatar } from "./digimon-avatar";
+import { AttributeIcon } from "./icons";
 import { cn } from "@/lib/utils";
 
 type MediaOpt = { id: number; name: string; kind: string };
@@ -300,7 +301,8 @@ function TreeNode({ n, x, y, root, selected, dim, onClick, onHover }: { n: GNode
         <span className="block truncate font-display text-[14px] font-semibold leading-tight">{n.name}</span>
         <span className="mt-0.5 flex items-center gap-1 text-[10px] text-muted">
           <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: n.stageColor }} />
-          <span className="truncate">{n.stageName}{n.attrName ? ` · ${n.attrName}` : ""}</span>
+          <span className="truncate">{n.stageName}</span>
+          {n.attrSlug && n.attrSlug !== "no-data" && <AttributeIcon slug={n.attrSlug} name={n.attrName ?? undefined} size={12} />}
         </span>
       </span>
     </button>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DigimonAvatar } from "./digimon-avatar";
+import { AttributeIcon } from "./icons";
 import { padNumber, cn } from "@/lib/utils";
 import type { CardDigimon } from "@/lib/queries";
 
@@ -17,7 +18,7 @@ export function DigimonCard({ d, className, extra }: { d: CardDigimon; className
           {d.stage && <span>{d.stage.name}</span>}
           {d.attribute && (
             <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5" style={{ background: d.attribute.color }} />
+              <AttributeIcon slug={d.attribute.slug} name={d.attribute.name} size={13} />
               {d.attribute.name.split(" (")[0]}
             </span>
           )}
