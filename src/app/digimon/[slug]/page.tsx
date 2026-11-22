@@ -374,7 +374,7 @@ function EvoColumn({ title, icon, items, self, direction }: {
         <div className={curated.length ? "order-last mt-4 border-t border-line pt-4" : ""}>
           <div className="label mb-1">Listadas na Wikimon · {listed.length}</div>
           <p className="mb-3 text-xs text-muted">
-            Sem a obra de origem: podem valer só em um jogo, anime ou V-Pet. Nenhuma é obrigatória. <StatusBadge status="unconfirmed" compact />
+            Evoluções oficiais registradas na Wikimon. A fonte não indica em qual obra cada uma acontece, e nenhuma é obrigatória.
           </p>
           <ul className="flex flex-wrap gap-1.5">
             {listed.map((e) => (

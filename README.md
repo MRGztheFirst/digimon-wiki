@@ -83,7 +83,7 @@ As artes oficiais (© Bandai) vêm da [Digi-API](https://digi-api.com), base pú
 
 ### Catálogo completo
 
-`npm run db:import` traz os ~1.490 Digimon da Digi-API (espelho da Wikimon): estágio, atributo, tipos, famílias, ano de estreia, golpes e o perfil oficial do Digimon Reference Book em japonês e inglês. Descrições marcadas como `fanmade` são descartadas. As evoluções vêm das listas da Wikimon, que não dizem em qual obra cada uma acontece, então entram como **Não confirmada** e marcadas como importadas. Na árvore, elas mostram só um ou dois níveis.
+`npm run db:import` traz os ~1.490 Digimon da Digi-API (espelho da Wikimon): estágio, atributo, tipos, famílias, ano de estreia, golpes e o perfil oficial do Digimon Reference Book em japonês e inglês. Descrições marcadas como `fanmade` são descartadas. As evoluções vêm das listas da Wikimon, que não dizem em qual obra cada uma acontece, então entram como **Oficial** com uma nota de que a obra não está indicada, marcadas como importadas. Na árvore, elas mostram só um ou dois níveis.
 
 ## Editor (só o dono edita, sem login)
 

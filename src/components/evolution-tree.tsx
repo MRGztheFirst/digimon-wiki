@@ -418,13 +418,22 @@ function EdgeGroup({ title, edges, byId, pick, onEdge }: { title: string; edges:
       ) : (
         <ul className="space-y-1">
           {edges.map((e) => (
-            <li key={e.id}>
-              <button onClick={() => onEdge(e.id)} className="flex w-full flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-[4px] px-2 py-1.5 text-left text-sm hover:bg-surface-2">
-                <span className="font-medium">{pick(e).map((id) => byId.get(id)?.name).join(" + ")}</span>
-                <span className="flex shrink-0 gap-1">
-                  {e.kind !== "normal" && <KindPill k={e.kind} />}
-                  {e.status !== "official" && <StatusPill s={e.status} />}
-                </span>
+            <li key={e.id} className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-[4px] px-2 py-1.5 text-sm hover:bg-surface-2">
+              <span className="font-medium">
+                {pick(e).map((id, i) => {
+                  const node = byId.get(id);
+                  return (
+                    <span key={id}>
+                      {i > 0 && " + "}
+                      {node ? <Link href={`/digimon/${node.slug}`} className="hover:text-primary hover:underline">{node.name}</Link> : null}
+                    </span>
+                  );
+                })}
+              </span>
+              <button onClick={() => onEdge(e.id)} className="flex shrink-0 items-center gap-1 text-[11px] text-muted hover:text-fg" title="Ver detalhes desta evolução">
+                {e.kind !== "normal" && <KindPill k={e.kind} />}
+                {e.status !== "official" && <StatusPill s={e.status} />}
+                <span className="underline-offset-2 hover:underline">detalhes</span>
               </button>
             </li>
           ))}

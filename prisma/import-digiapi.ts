@@ -268,9 +268,9 @@ async function main() {
       fromId: p.fromId,
       toId: p.toId,
       kind,
-      status: "unconfirmed",
+      status: "official",
       requirements: p.conditions.size ? [...p.conditions].join(" / ") : null,
-      notes: "Listada na Wikimon (via Digi-API) sem indicar em qual obra acontece. Confira a página da Wikimon antes de tratar como oficial.",
+      notes: "Evolução registrada na Wikimon a partir de material oficial. A obra específica (jogo, anime, V-Pet...) não está indicada na fonte.",
       sourceId: wikimon,
       imported: true,
     };
