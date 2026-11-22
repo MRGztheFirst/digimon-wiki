@@ -75,6 +75,9 @@ model Digimon {
   imageUrl        String?
   imageCredit     String?
   summary         String?
+  profileJp       String?
+  profileEn       String?
+  apiId           Int?     @unique
   nameMeaning     String?
   designOrigin    String?
   physical        String?
@@ -269,6 +272,7 @@ model Evolution {
   requirements String?
   notes        String?
   sourceId     Int?
+  imported     Boolean            @default(false)
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
   from         Digimon            @relation("EvolutionFrom", fields: [fromId], references: [id], onDelete: Cascade)
@@ -279,6 +283,7 @@ model Evolution {
 
   @@unique([fromId, toId, kind])
   @@index([toId])
+  @@index([imported])
   @@index([kind])
   @@index([status])
 }

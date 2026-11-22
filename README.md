@@ -16,6 +16,7 @@ npm run dev               # http://localhost:3000
 - Editor da wiki: `http://localhost:3000/admin` — só existe onde `EDITOR_ENABLED="true"` (veja abaixo).
 - Recriar o banco do zero: `npm run db:reset`.
 - Reimportar imagens: `npm run db:images`.
+- Importar todos os Digimon da Digi-API/Wikimon: `npm run db:import` (baixa para `prisma/.cache` só o que falta e completa o banco sem sobrescrever o que foi curado).
 - Prévia de produção local (porta 3001, roda junto com o `dev`): `npm run preview`.
 
 ## Stack
@@ -79,6 +80,10 @@ O nome principal de cada Digimon, golpe e obra é o **original japonês** (Omega
 ### Imagens
 
 As artes oficiais (© Bandai) vêm da [Digi-API](https://digi-api.com), base pública cujos dados vêm da Wikimon, via `npm run db:images`. O script só preenche Digimon sem imagem ou com imagem da própria Digi-API — imagens enviadas pelo editor não são sobrescritas. Nomes que diferem entre esta wiki e a Digi-API ficam em `OVERRIDES` no `prisma/import-images.ts`.
+
+### Catálogo completo
+
+`npm run db:import` traz os ~1.490 Digimon da Digi-API (espelho da Wikimon): estágio, atributo, tipos, famílias, ano de estreia, golpes e o perfil oficial do Digimon Reference Book em japonês e inglês. Descrições marcadas como `fanmade` são descartadas. As evoluções vêm das listas da Wikimon, que não dizem em qual obra cada uma acontece, então entram como **Não confirmada** e marcadas como importadas. Na árvore, elas mostram só um ou dois níveis.
 
 ## Editor (só o dono edita, sem login)
 

@@ -28,8 +28,8 @@ export default async function CompareUniverses({ searchParams }: { searchParams:
           stage: true,
           attribute: true,
           appearances: { include: { media: true } },
-          evolutionsFrom: { include: { to: { select: cardSelect }, partners: { include: { digimon: { select: { name: true } } } }, contexts: { include: { media: true } } } },
-          evolutionsTo: { include: { from: { select: cardSelect }, partners: { include: { digimon: { select: { name: true } } } }, contexts: { include: { media: true } } } },
+          evolutionsFrom: { where: { imported: false }, include: { to: { select: cardSelect }, partners: { include: { digimon: { select: { name: true } } } }, contexts: { include: { media: true } } } },
+          evolutionsTo: { where: { imported: false }, include: { from: { select: cardSelect }, partners: { include: { digimon: { select: { name: true } } } }, contexts: { include: { media: true } } } },
           partnerIn: { include: { evolution: { include: { to: { select: cardSelect }, from: { select: { name: true } }, contexts: { include: { media: true } } } } } },
         },
       })

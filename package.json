@@ -10,10 +10,12 @@
     "lint": "tsc --noEmit",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts && tsx prisma/import-images.ts",
-    "setup": "prisma db push && tsx prisma/seed.ts && tsx prisma/import-images.ts",
+    "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts && npm run db:import && tsx prisma/import-images.ts",
+    "setup": "prisma db push && tsx prisma/seed.ts && npm run db:import && tsx prisma/import-images.ts",
     "db:images": "tsx prisma/import-images.ts",
-    "preview": "next build && next start -p 3001"
+    "preview": "next build && next start -p 3001",
+    "db:fetch": "tsx prisma/fetch-digiapi.ts",
+    "db:import": "tsx prisma/fetch-digiapi.ts && tsx prisma/import-digiapi.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

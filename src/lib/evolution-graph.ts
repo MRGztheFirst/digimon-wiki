@@ -53,47 +53,47 @@ function toEdge(e: RawEdge): GEdge {
   };
 }
 
+const IMPORTED_NODE_BUDGET = 40;
+
 export async function buildEvolutionGraph(rootId: number, maxDepth = 12): Promise<GraphData> {
   const edges = new Map<number, GEdge>();
   const nodeIds = new Set<number>([rootId]);
 
-  let frontier = [rootId];
-  const seenUp = new Set<number>([rootId]);
-  for (let depth = 0; depth < maxDepth && frontier.length; depth++) {
-    const rows = await fetchEdges({ toId: { in: frontier } });
-    const next: number[] = [];
-    for (const r of rows) {
-      edges.set(r.id, toEdge(r));
-      for (const id of [r.fromId, ...r.partners.map((p) => p.digimonId)]) {
-        nodeIds.add(id);
-        if (!seenUp.has(id)) {
-          seenUp.add(id);
-          next.push(id);
+  async function walk(direction: "up" | "down", imported: boolean, depthLimit: number) {
+    let frontier = [rootId];
+    const seen = new Set<number>(frontier);
+    for (let depth = 0; depth < depthLimit && frontier.length; depth++) {
+      const where =
+        direction === "up"
+          ? { imported, toId: { in: frontier } }
+          : { imported, OR: [{ fromId: { in: frontier } }, { partners: { some: { digimonId: { in: frontier } } } }] };
+      const rows = await fetchEdges(where);
+      if (imported && depth > 0) {
+        const fresh = new Set(rows.flatMap((r) => [r.fromId, r.toId]).filter((id) => !nodeIds.has(id)));
+        if (nodeIds.size + fresh.size > IMPORTED_NODE_BUDGET) break;
+      }
+      const next: number[] = [];
+      for (const r of rows) {
+        edges.set(r.id, toEdge(r));
+        nodeIds.add(r.fromId);
+        nodeIds.add(r.toId);
+        r.partners.forEach((p) => nodeIds.add(p.digimonId));
+        const reached = direction === "up" ? [r.fromId, ...r.partners.map((p) => p.digimonId)] : [r.toId];
+        for (const id of reached) {
+          if (!seen.has(id)) {
+            seen.add(id);
+            next.push(id);
+          }
         }
       }
+      frontier = next;
     }
-    frontier = next;
   }
 
-  frontier = [rootId];
-  const seenDown = new Set<number>([rootId]);
-  for (let depth = 0; depth < maxDepth && frontier.length; depth++) {
-    const rows = await fetchEdges({
-      OR: [{ fromId: { in: frontier } }, { partners: { some: { digimonId: { in: frontier } } } }],
-    });
-    const next: number[] = [];
-    for (const r of rows) {
-      edges.set(r.id, toEdge(r));
-      nodeIds.add(r.fromId);
-      r.partners.forEach((p) => nodeIds.add(p.digimonId));
-      nodeIds.add(r.toId);
-      if (!seenDown.has(r.toId)) {
-        seenDown.add(r.toId);
-        next.push(r.toId);
-      }
-    }
-    frontier = next;
-  }
+  await walk("up", false, maxDepth);
+  await walk("down", false, maxDepth);
+  await walk("up", true, 2);
+  await walk("down", true, 2);
 
   const rows = await db.digimon.findMany({ where: { id: { in: [...nodeIds] } }, select: nodeSelect });
   const nodes: GNode[] = rows.map((d) => ({

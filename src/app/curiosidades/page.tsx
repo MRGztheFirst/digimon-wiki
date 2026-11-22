@@ -14,8 +14,8 @@ export const metadata: Metadata = { title: "Curiosidades" };
 export default async function Curiosities() {
   const [trivia, fusions, specials, variants, groups, media, firsts] = await Promise.all([
     db.trivia.findMany({ include: { digimon: { select: cardSelect } }, orderBy: { digimon: { number: "asc" } } }),
-    db.evolution.findMany({ where: { kind: { in: ["dna", "biomerge"] } }, include: { from: { select: cardSelect }, to: { select: cardSelect }, partners: { include: { digimon: { select: cardSelect } } } } }),
-    db.evolution.findMany({ where: { kind: { in: ["armor", "spirit", "burst", "x-antibody", "mode-change", "warp", "dark", "special"] } }, include: { from: { select: cardSelect }, to: { select: cardSelect } }, orderBy: { kind: "asc" } }),
+    db.evolution.findMany({ where: { kind: { in: ["dna", "biomerge"] }, imported: false }, include: { from: { select: cardSelect }, to: { select: cardSelect }, partners: { include: { digimon: { select: cardSelect } } } } }),
+    db.evolution.findMany({ where: { kind: { in: ["armor", "spirit", "burst", "x-antibody", "mode-change", "warp", "dark", "special"] }, imported: false }, include: { from: { select: cardSelect }, to: { select: cardSelect } }, orderBy: { kind: "asc" } }),
     db.digimon.findMany({ where: { baseId: { not: null } }, select: { ...cardSelect, variantKind: true, base: { select: cardSelect } } }),
     db.group.findMany({ include: { members: { include: { digimon: { select: cardSelect } } } }, orderBy: [{ legendary: "desc" }, { name: "asc" }] }),
     db.media.findMany({ where: { year: { not: null } }, orderBy: { year: "asc" }, include: { _count: { select: { appearances: true } } } }),
@@ -123,7 +123,7 @@ export default async function Curiosities() {
                   </div>
                   {debut.length > 0 && (
                     <div className="mt-2 text-xs text-muted">
-                      Estreias documentadas: {debut.map((f, i) => <span key={f.id}>{i > 0 && ", "}<Link href={`/digimon/${f.slug}`} className="text-accent hover:underline">{f.name}</Link></span>)}
+                      Estreias documentadas: {debut.slice(0, 24).map((f, i) => <span key={f.id}>{i > 0 && ", "}<Link href={`/digimon/${f.slug}`} className="text-accent hover:underline">{f.name}</Link></span>)}{debut.length > 24 && ` e mais ${debut.length - 24}`}
                     </div>
                   )}
                 </li>

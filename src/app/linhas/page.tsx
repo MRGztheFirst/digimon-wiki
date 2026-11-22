@@ -14,13 +14,13 @@ export const metadata: Metadata = { title: "Linhas evolutivas" };
 export default async function LinesIndex() {
   const [roots, kindCounts, specials] = await Promise.all([
     db.digimon.findMany({
-      where: { stage: { slug: { in: ["novato", "hibrido"] } }, evolutionsFrom: { some: {} } },
+      where: { stage: { slug: { in: ["novato", "hibrido"] } }, evolutionsFrom: { some: { imported: false } } },
       select: { ...cardSelect, _count: { select: { evolutionsFrom: true } } },
       orderBy: { number: "asc" },
     }),
     db.evolution.groupBy({ by: ["kind"], _count: { _all: true } }),
     db.evolution.findMany({
-      where: { kind: { not: "normal" } },
+      where: { kind: { not: "normal" }, imported: false },
       include: { from: { select: cardSelect }, to: { select: cardSelect }, partners: { include: { digimon: { select: { name: true } } } } },
       orderBy: { kind: "asc" },
     }),

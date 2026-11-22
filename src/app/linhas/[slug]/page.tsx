@@ -33,7 +33,7 @@ export default async function LinePage({ params, searchParams }: { params: Promi
         crumbs={[["/linhas", "Linhas evolutivas"], [null, d.name]]}
         eyebrow="Linha evolutiva"
         title={<>Linha de {d.name}</>}
-        subtitle="Todas as evoluções anteriores e posteriores registradas. Use os filtros para ver apenas o que vale em um anime, jogo ou V-Pet específico."
+        subtitle="Evoluções anteriores e posteriores registradas. As linhas com obra definida aparecem completas; as listadas na Wikimon sem obra mostram só um ou dois níveis. Clique em um Digimon da árvore para seguir a partir dele."
       >
         <div className="flex flex-wrap items-center gap-2">
           <StageBadge stage={d.stage} />

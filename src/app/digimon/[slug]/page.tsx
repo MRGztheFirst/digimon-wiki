@@ -59,7 +59,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
   db.$executeRaw`UPDATE "Digimon" SET "viewCount" = "viewCount" + 1 WHERE "id" = ${d.id}`.catch(() => {});
 
   type EvoItem = {
-    id: number; kind: string; status: string; notes: string | null; requirements: string | null;
+    id: number; kind: string; status: string; notes: string | null; requirements: string | null; imported: boolean;
     others: (typeof d.evolutionsFrom)[number]["to"][];
     target: (typeof d.evolutionsFrom)[number]["to"];
     contexts: { media: { slug: string; name: string; kind: string }; requirements: string | null; status: string }[];
@@ -160,7 +160,17 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
 
           <Section id="visao-geral" title="Visão geral" icon={<Info size={18} />}>
             <div className="card p-5">
-              <div className="prose-wiki">{d.summary ? paragraphs(d.summary).map((p, i) => <p key={i}>{p}</p>) : <Missing>Descrição ainda não cadastrada.</Missing>}</div>
+              <div className="prose-wiki">
+                {d.summary ? paragraphs(d.summary).map((p, i) => <p key={i}>{p}</p>) : !(d.profileJp || d.profileEn) && <Missing>Descrição ainda não cadastrada.</Missing>}
+              </div>
+              {(d.profileJp || d.profileEn) && (
+                <figure className={d.summary ? "mt-5 border-t border-line pt-5" : ""}>
+                  <figcaption className="label mb-3">Perfil oficial · Digimon Reference Book</figcaption>
+                  {d.profileJp && <blockquote lang="ja" className="font-jp text-[15px] leading-8">{d.profileJp}</blockquote>}
+                  {d.profileEn && <blockquote lang="en" className={`text-[15px] leading-7 text-muted ${d.profileJp ? "mt-4" : ""}`}>{d.profileEn}</blockquote>}
+                  <p className="mt-3 text-xs text-muted">Texto original da Bandai, sem tradução, conforme reproduzido na Wikimon.</p>
+                </figure>
+              )}
               <dl className="mt-4">
                 <Field label="Nome oficial">{d.name}</Field>
                 <Field label="Nome japonês">{d.nameJp}</Field>
@@ -352,16 +362,34 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
 
 function EvoColumn({ title, icon, items, self, direction }: {
   title: string; icon: React.ReactNode; self: string; direction: "prev" | "next";
-  items: { id: number; kind: string; status: string; notes: string | null; requirements: string | null; target: Parameters<typeof DigimonChip>[0]["d"] & { id: number }; others: (Parameters<typeof DigimonChip>[0]["d"] & { id: number })[]; contexts: { media: { slug: string; name: string; kind: string }; requirements: string | null; status: string }[] }[];
+  items: { id: number; kind: string; status: string; notes: string | null; requirements: string | null; imported: boolean; target: Parameters<typeof DigimonChip>[0]["d"] & { id: number }; others: (Parameters<typeof DigimonChip>[0]["d"] & { id: number })[]; contexts: { media: { slug: string; name: string; kind: string }; requirements: string | null; status: string }[] }[];
 }) {
+  const curated = items.filter((e) => !e.imported);
+  const listed = items.filter((e) => e.imported);
   return (
-    <div className="card p-5">
+    <div className="card flex flex-col p-5">
       <h3 className="mb-3 flex items-center gap-2 font-semibold"><span className="text-primary">{icon}</span>{title}</h3>
-      {items.length === 0 ? (
-        <Missing>Nenhuma evolução cadastrada.</Missing>
-      ) : (
+      {items.length === 0 && <Missing>Nenhuma evolução cadastrada.</Missing>}
+      {listed.length > 0 && (
+        <div className={curated.length ? "order-last mt-4 border-t border-line pt-4" : ""}>
+          <div className="label mb-1">Listadas na Wikimon · {listed.length}</div>
+          <p className="mb-3 text-xs text-muted">
+            Sem a obra de origem: podem valer só em um jogo, anime ou V-Pet. Nenhuma é obrigatória. <StatusBadge status="unconfirmed" compact />
+          </p>
+          <ul className="flex flex-wrap gap-1.5">
+            {listed.map((e) => (
+              <li key={`${e.id}-${e.target.id}`} className="flex items-center gap-1.5">
+                <DigimonChip d={e.target} size="sm" />
+                {e.kind !== "normal" && <EvoKindBadge kind={e.kind} />}
+                {e.requirements && <span className="max-w-56 text-[11px] text-muted">{e.requirements}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {curated.length > 0 && (
         <ul className="space-y-3">
-          {items.map((e) => (
+          {curated.map((e) => (
             <li key={`${e.id}-${e.target.id}`} className="rounded-[4px] border border-line p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <DigimonChip d={e.target} size="sm" />
