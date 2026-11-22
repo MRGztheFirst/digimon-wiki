@@ -24,11 +24,11 @@ export function SiteHeader() {
   if (pathname.startsWith("/admin")) return null;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur">
+    <header className="sticky top-0 z-40 bg-bar text-bar-fg shadow-[0_1px_0_rgba(0,0,0,.12)]">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 md:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="Digimon Database — início">
-          <Logo />
-          <span className="hidden sm:inline"><Wordmark /></span>
+          <Logo onBar />
+          <Wordmark className="text-[17px] sm:text-[19px]" />
         </Link>
         <nav className="hidden h-full items-stretch gap-5 lg:flex" aria-label="Principal">
           {NAV.map((n) => {
@@ -39,7 +39,7 @@ export function SiteHeader() {
                 href={n.href}
                 className={cn(
                   "flex items-center whitespace-nowrap border-b-2 pt-0.5 text-sm transition-colors",
-                  active ? "border-primary text-fg" : "border-transparent text-muted hover:text-fg",
+                  active ? "border-white font-medium text-white" : "border-transparent text-white/75 hover:text-white",
                 )}
               >
                 {n.label}
@@ -53,9 +53,9 @@ export function SiteHeader() {
               <SearchBox compact />
             </div>
           )}
-          <ThemeToggle />
+          <ThemeToggle onBar />
           <button
-            className="btn btn-ghost h-9 w-9 p-0 lg:hidden"
+            className="btn h-9 w-9 border-white/25 p-0 text-white hover:border-white/60 lg:hidden"
             onClick={() => setOpen((o) => !o)}
             aria-label={open ? "Fechar menu" : "Abrir menu"}
             aria-expanded={open}
@@ -65,14 +65,13 @@ export function SiteHeader() {
         </div>
       </div>
       {open && (
-        <div className="border-t border-line bg-bg px-4 pb-4 pt-3 lg:hidden">
+        <div className="border-t border-white/15 bg-bar px-4 pb-4 pt-3 lg:hidden">
           <div className="mb-3 md:hidden">
             <SearchBox compact />
           </div>
           <nav className="grid" aria-label="Principal (móvel)">
-            {NAV.map((n, i) => (
-              <Link key={n.href} href={n.href} className="flex items-baseline gap-3 border-b border-line py-3 text-[15px] last:border-0">
-                <span className="font-mono text-[11px] text-muted">{String(i + 1).padStart(2, "0")}</span>
+            {NAV.map((n) => (
+              <Link key={n.href} href={n.href} className="border-b border-white/15 py-3 text-[15px] text-white last:border-0">
                 {n.label}
               </Link>
             ))}

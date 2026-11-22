@@ -15,22 +15,10 @@ export const dynamic = "force-dynamic";
 const POPULAR_LINES = ["agumon", "gabumon", "patamon", "tailmon", "v-mon", "guilmon", "renamon", "terriermon", "agnimon", "omegamon"];
 const QUICK = ["agumon", "omegamon", "tailmon", "imperialdramon-fighter-mode", "beelzebumon"];
 
-const EXPLORE: [string, string, string][] = [
-  ["/digimon", "Enciclopédia", "Todos os Digimon, com busca e filtros combináveis."],
-  ["/linhas", "Linhas evolutivas", "Árvores interativas, filtráveis por anime, jogo e V-Pet."],
-  ["/universos", "Digimon por Universo", "Como as regras mudam de uma obra para outra."],
-  ["/estagios", "Estágios", "Do Digiovo ao Supremo, com nomes originais."],
-  ["/atributos", "Atributos", "Vaccine, Data, Virus, Free e os demais."],
-  ["/tipos", "Tipos", "Dragon Man, Holy Knight, Beast e outros."],
-  ["/familias", "Famílias", "Nature Spirits, Metal Empire, Virus Busters…"],
-  ["/grupos", "Grupos e lendários", "Royal Knights, Seven Great Demon Lords…"],
-  ["/comparar", "Comparador", "Coloque até quatro Digimon lado a lado."],
-  ["/curiosidades", "Curiosidades", "Fusões, variantes e a cronologia das obras."],
-];
 
 export default async function Home() {
   const [counts, featured, popular, recent, random, stages, attributes, types, families, media, lineRoots, quick] = await Promise.all([
-    Promise.all([db.digimon.count(), db.evolution.count(), db.media.count()]),
+    Promise.all([db.digimon.count(), db.evolution.count(), db.media.count(), db.digimonType.count()]),
     db.digimon.findMany({ where: { featured: true, imageUrl: { not: null } }, select: { ...cardSelect, summary: true, romaji: true } }),
     db.digimon.findMany({ select: cardSelect, take: 6, orderBy: [{ viewCount: "desc" }, { number: "asc" }] }),
     db.digimon.findMany({ select: cardSelect, take: 6, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
@@ -43,78 +31,84 @@ export default async function Home() {
     db.digimon.findMany({ where: { slug: { in: POPULAR_LINES } }, select: { ...cardSelect, _count: { select: { evolutionsFrom: true, evolutionsTo: true } } } }),
     db.digimon.findMany({ where: { slug: { in: QUICK } }, select: { slug: true, name: true } }),
   ]);
-  const [nDigimon, nEvo, nMedia] = counts;
+  const [nDigimon, nEvo, nMedia, nTypes] = counts;
   const spot = featured.length ? featured[Math.floor(Math.random() * featured.length)] : null;
   const lines = POPULAR_LINES.map((s) => lineRoots.find((d) => d.slug === s)).filter((d): d is NonNullable<typeof d> => !!d);
   const quickLinks = QUICK.map((s) => quick.find((q) => q.slug === s)).filter((q): q is NonNullable<typeof q> => !!q);
   const mainStages = stages.filter((s) => !s.isSpecial);
+  const fmt = (n: number) => n.toLocaleString("pt-BR");
+  const explore: [string, string, string][] = [
+    ["/digimon", "Enciclopédia", `${fmt(nDigimon)} Digimon`],
+    ["/linhas", "Linhas evolutivas", `${fmt(nEvo)} evoluções`],
+    ["/universos", "Digimon por Universo", `${fmt(nMedia)} obras`],
+    ["/estagios", "Estágios", `${stages.length} estágios`],
+    ["/atributos", "Atributos", `${attributes.length} atributos`],
+    ["/tipos", "Tipos", `${fmt(nTypes)} tipos`],
+    ["/familias", "Famílias", `${families.length} famílias`],
+    ["/grupos", "Grupos", "Royal Knights e outros"],
+    ["/comparar", "Comparador", "Até 4 lado a lado"],
+    ["/curiosidades", "Curiosidades", "Fusões e variantes"],
+  ];
 
   return (
     <div>
-      <section className="border-b border-line">
-        <Container className="grid gap-10 py-12 md:py-16 lg:grid-cols-[1.25fr_1fr] lg:items-center lg:gap-16">
+      <section className="border-b border-line bg-surface">
+        <Container className="grid gap-10 py-10 md:py-12 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:gap-14">
           <div>
-            <div className="label mb-5">
-              Enciclopédia de fã · {nDigimon} Digimon · {nEvo} conexões evolutivas · {nMedia} obras
-            </div>
-            <h1 className="font-display text-[2.6rem] font-semibold leading-[1.02] tracking-tight sm:text-6xl">
-              Cada Digimon, cada evolução, em cada obra.
-            </h1>
-            <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-muted">
-              Linhas evolutivas que mostram de onde vem cada conexão — anime, jogo, V-Pet ou material oficial — sem tratar a regra de um jogo como regra de todos.
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Digimon Database</h1>
+            <p className="mt-3 max-w-xl text-[16px] leading-relaxed text-muted">
+              A enciclopédia de Digimon em português: {fmt(nDigimon)} Digimon com estágio, atributo, golpes, perfil oficial e todas as linhas evolutivas.
             </p>
-            <div className="mt-8 max-w-xl">
+            <div className="mt-6 max-w-xl">
               <SearchBox />
             </div>
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-              <span className="label">Experimente</span>
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+              <span className="text-muted">Populares:</span>
               {quickLinks.map((q, i) => (
-                <span key={q.slug} className="flex items-center gap-3">
-                  {i > 0 && <span className="text-line">/</span>}
-                  <Link href={`/digimon/${q.slug}`} className="text-fg/80 underline decoration-line underline-offset-4 hover:text-primary hover:decoration-primary">{q.name}</Link>
+                <span key={q.slug}>
+                  <Link href={`/digimon/${q.slug}`} className="text-accent hover:underline">{q.name}</Link>
+                  {i < quickLinks.length - 1 && <span className="text-muted">,</span>}
                 </span>
               ))}
             </div>
           </div>
 
           {spot && (
-            <Link href={`/digimon/${spot.slug}`} className="group block max-w-md lg:max-w-none">
-              <div className="label mb-3 flex justify-between">
-                <span>Em destaque</span>
-                <span>Nº {String(spot.number).padStart(4, "0")}</span>
+            <Link href={`/digimon/${spot.slug}`} className="group flex max-w-xl gap-5 rounded-[10px] border border-line bg-bg p-4 transition-colors hover:border-primary/60 lg:max-w-none">
+              <DigimonAvatar name={spot.name} imageUrl={spot.imageUrl} color={spot.stage?.color} className="aspect-square w-36 shrink-0 sm:w-44" />
+              <div className="min-w-0 self-center">
+                <div className="label">Digimon em destaque</div>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight group-hover:text-primary">{spot.name}</h2>
+                {spot.nameJp && <div className="font-jp text-sm text-muted">{spot.nameJp}</div>}
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {spot.stage && <span className="rounded-[5px] bg-surface-2 px-2 py-0.5 text-xs font-medium">{spot.stage.name}</span>}
+                  {spot.attribute && (
+                    <span className="flex items-center gap-1 rounded-[5px] bg-surface-2 px-2 py-0.5 text-xs font-medium">
+                      <AttributeIcon slug={spot.attribute.slug} name={spot.attribute.name} size={13} />
+                      {spot.attribute.name.split(" (")[0]}
+                    </span>
+                  )}
+                </div>
+                {spot.summary && <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{spot.summary}</p>}
               </div>
-              <DigimonAvatar name={spot.name} imageUrl={spot.imageUrl} color={spot.stage?.color} stripe className="aspect-[4/3] w-full" />
-              <div className="mt-4 flex items-baseline justify-between gap-4">
-                <h2 className="font-display text-3xl font-semibold tracking-tight group-hover:text-primary">{spot.name}</h2>
-                {spot.nameJp && <span className="font-jp text-muted">{spot.nameJp}</span>}
-              </div>
-              <div className="mt-1 font-mono text-[11px] uppercase tracking-wide text-muted">
-                {[spot.stage?.name, spot.attribute?.name.split(" (")[0]].filter(Boolean).join(" · ")}
-              </div>
-              {spot.summary && <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{spot.summary}</p>}
             </Link>
           )}
         </Container>
       </section>
 
-      <Container className="space-y-20 py-14">
+      <Container className="space-y-16 py-12">
         <Section title="Explore o Mundo Digital">
-          <ol className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-5">
-            {EXPLORE.map(([href, title, desc], i) => (
-              <li key={href}>
-                <Link href={href} className="group flex h-full gap-3 border-t border-line py-4">
-                  <span className="pt-0.5 font-mono text-[11px] text-muted">{String(i + 1).padStart(2, "0")}</span>
-                  <span>
-                    <span className="block font-display text-[17px] font-semibold leading-tight group-hover:text-primary">{title}</span>
-                    <span className="mt-1 block text-[13px] leading-snug text-muted">{desc}</span>
-                  </span>
-                </Link>
-              </li>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {explore.map(([href, title, stat]) => (
+              <Link key={href} href={href} className="card group px-4 py-3.5 transition-colors hover:border-primary/60">
+                <span className="block font-semibold group-hover:text-primary">{title}</span>
+                <span className="mt-0.5 block text-[13px] text-muted">{stat}</span>
+              </Link>
             ))}
-          </ol>
+          </div>
         </Section>
 
-        <Section title="Linhas evolutivas" description="Comece por um Novato e siga todas as possibilidades." action={<SeeAll href="/linhas" />}>
+        <Section title="Linhas evolutivas" description="Comece por um Novato e veja para onde ele pode evoluir." action={<SeeAll href="/linhas" />}>
           <div className="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-5 lg:grid-cols-10">
             {lines.map((d) => (
               <Link key={d.id} href={`/linhas/${d.slug}`} className="group">
@@ -155,7 +149,7 @@ export default async function Home() {
                     </div>
                     <div className="mt-3 font-display text-[17px] font-semibold group-hover:text-primary">{s.name}</div>
                     <div className="font-jp text-xs text-muted">{s.nameJp}</div>
-                    <div className="mt-1 font-mono text-[10.5px] uppercase tracking-wide text-muted">{s.nameEn?.split(" /")[0]} · {s._count.digimon}</div>
+                    <div className="mt-1 text-xs text-muted">{s.nameEn?.split(" /")[0]} · {s._count.digimon}</div>
                   </Link>
                 </li>
               ))}
@@ -233,18 +227,6 @@ export default async function Home() {
           </div>
         </Section>
 
-        <section className="grid gap-6 border-t border-line pt-10 md:grid-cols-[1fr_2fr]">
-          <h2 className="font-display text-2xl font-semibold tracking-tight">Informação com origem</h2>
-          <div className="space-y-3 text-[15px] leading-relaxed text-muted">
-            <p>
-              Toda evolução, aparição e curiosidade indica se é <span className="text-fg">oficial</span>, se vale <span className="text-fg">só em uma obra</span>, se é <span className="text-fg">da comunidade</span> ou se <span className="text-fg">ainda não foi confirmada</span>. Quando não há fonte, o campo fica em branco.
-            </p>
-            <p>
-              Os nomes seguem as obras originais japonesas; nomes de dublagens aparecem apenas como alternativos.{" "}
-              <Link href="/fontes" className="text-fg underline decoration-line underline-offset-4 hover:text-primary hover:decoration-primary">Fontes e legenda →</Link>
-            </p>
-          </div>
-        </section>
       </Container>
     </div>
   );

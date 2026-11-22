@@ -104,10 +104,10 @@ export function SearchBox({ compact, placeholder, onPick, autoFocus, className }
               submit();
             } else if (e.key === "Escape") setOpen(false);
           }}
-          placeholder={placeholder ?? (compact ? "Buscar Digimon..." : "Nome do Digimon — Agumon, オメガモン, Tailmon…")}
+          placeholder={placeholder ?? (compact ? "Buscar Digimon..." : "Buscar por nome: Agumon, オメガモン, Tailmon...")}
           className={cn(
             "w-full border border-line bg-surface text-fg transition-colors placeholder:text-muted/80 focus:border-primary focus:outline-none",
-            compact ? "h-9 rounded-[4px] pl-9 pr-3 text-sm" : "h-14 rounded-[4px] pl-12 pr-4 text-base sm:text-[17px]",
+            compact ? "h-9 rounded-[6px] border-transparent pl-9 pr-3 text-sm" : "h-14 rounded-[8px] pl-12 pr-4 text-base shadow-sm sm:text-[17px]",
           )}
           role="combobox"
           aria-expanded={open && results.length > 0}
@@ -117,7 +117,7 @@ export function SearchBox({ compact, placeholder, onPick, autoFocus, className }
         />
       </div>
       {open && q.trim() && (
-        <div id={listId} role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[4px] border border-line bg-surface shadow-xl shadow-black/20">
+        <div id={listId} role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[8px] border border-line bg-surface shadow-xl shadow-black/20">
           {results.length === 0 ? (
             <div className="px-4 py-3 text-sm text-muted">{loading ? "Buscando..." : onPick ? "Nenhum resultado." : "Nenhum resultado. Pressione Enter para a busca avançada."}</div>
           ) : (
@@ -134,7 +134,7 @@ export function SearchBox({ compact, placeholder, onPick, autoFocus, className }
                 <DigimonAvatar name={r.name} imageUrl={r.imageUrl} className="h-10 w-10 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-display text-[15px] font-semibold">{r.name}</div>
-                  <div className="truncate font-mono text-[11px] uppercase tracking-wide text-muted">
+                  <div className="truncate text-[13px] text-muted">
                     {[r.nameJp, r.stage?.name, r.attribute?.name?.split(" (")[0]].filter(Boolean).join(" · ")}
                   </div>
                 </div>
@@ -142,7 +142,7 @@ export function SearchBox({ compact, placeholder, onPick, autoFocus, className }
             ))
           )}
           {!onPick && (
-            <button type="button" onClick={() => router.push(`/digimon?q=${encodeURIComponent(q.trim())}`)} className="w-full border-t border-line px-3 py-2 text-left font-mono text-[11px] uppercase tracking-wide text-muted hover:bg-surface-2 hover:text-primary">
+            <button type="button" onClick={() => router.push(`/digimon?q=${encodeURIComponent(q.trim())}`)} className="w-full border-t border-line px-3 py-2 text-left text-[13px] text-muted hover:bg-surface-2 hover:text-primary">
               Ver todos os resultados na busca avançada →
             </button>
           )}

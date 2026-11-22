@@ -10,8 +10,6 @@ type Props = {
   stripe?: boolean;
 };
 
-const EGG = ["..XXXX..", ".XXXXXX.", ".XXXXXX.", "XXXXXXXX", "XXXXXXXX", "XXXXXXXX", ".XXXXXX.", "..XXXX.."];
-
 export function DigimonAvatar({ name, imageUrl, color, className, rounded, stripe }: Props) {
   const radius = rounded === "rounded-none" ? "rounded-none" : "rounded-[4px]";
   return (
@@ -20,8 +18,9 @@ export function DigimonAvatar({ name, imageUrl, color, className, rounded, strip
         <img src={imageUrl} alt={name} loading="lazy" decoding="async" className="h-full w-full object-contain p-[6%]" />
       ) : (
         <div className="flex h-full w-full items-center justify-center" role="img" aria-label={`${name} — sem imagem cadastrada`}>
-          <svg viewBox="0 0 8 8" className="h-2/5 w-2/5 opacity-25" shapeRendering="crispEdges" aria-hidden="true">
-            {EGG.flatMap((row, y) => [...row].map((c, x) => (c === "X" ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill="#1d1b17" /> : null)))}
+          <svg viewBox="0 0 32 32" className="h-1/3 w-1/3 opacity-20" aria-hidden="true">
+            <path d="M16 1.5 28.6 8.75v14.5L16 30.5 3.4 23.25V8.75Z" fill="none" stroke="#111827" strokeWidth="2.5" strokeLinejoin="round" />
+            <text x="16" y="21.5" textAnchor="middle" fontSize="14" fontWeight="700" fill="#111827" fontFamily="IBM Plex Sans, sans-serif">?</text>
           </svg>
         </div>
       )}

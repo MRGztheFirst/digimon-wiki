@@ -14,7 +14,7 @@ export function DigimonCard({ d, className, extra }: { d: CardDigimon; className
           <span className="shrink-0 font-mono text-[10px] text-muted">{padNumber(d.number)}</span>
         </div>
         {d.nameJp && <div className="truncate font-jp text-xs text-muted">{d.nameJp}</div>}
-        <div className="mt-1.5 flex flex-wrap gap-x-2 font-mono text-[10.5px] uppercase tracking-wide text-muted">
+        <div className="mt-1.5 flex flex-wrap gap-x-2 text-xs text-muted">
           {d.stage && <span>{d.stage.name}</span>}
           {d.attribute && (
             <span className="flex items-center gap-1">

@@ -7,7 +7,7 @@ export function Container({ children, className }: { children: React.ReactNode; 
 
 export function Breadcrumbs({ items }: { items: [href: string | null, label: string][] }) {
   return (
-    <nav aria-label="Trilha" className="mb-5 flex flex-wrap items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-muted">
+    <nav aria-label="Trilha" className="mb-5 flex flex-wrap items-center gap-1.5 text-[13px] text-muted">
       <Link href="/" className="hover:text-fg">Início</Link>
       {items.map(([href, label], i) => (
         <span key={i} className="flex items-center gap-1.5">
@@ -58,7 +58,7 @@ export function Section({
 
 export function SeeAll({ href, children = "Ver todos" }: { href: string; children?: React.ReactNode }) {
   return (
-    <Link href={href} className="shrink-0 font-mono text-[11px] uppercase tracking-wide text-muted transition-colors hover:text-primary">
+    <Link href={href} className="shrink-0 text-sm font-medium text-accent hover:underline">
       {children} →
     </Link>
   );

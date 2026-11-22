@@ -5,7 +5,7 @@ import { AttributeIcon, FamilyIcon } from "./icons";
 
 export function Pill({ color, children, className, title, href, icon }: { color?: string | null; children: React.ReactNode; className?: string; title?: string; href?: string; icon?: React.ReactNode }) {
   const cls = cn(
-    "inline-flex items-center gap-1.5 whitespace-nowrap rounded-[3px] border border-line bg-bg/60 py-[2px] pl-1.5 pr-2 font-mono text-[11px] uppercase leading-none tracking-wide text-fg/85",
+    "inline-flex items-center gap-1.5 whitespace-nowrap rounded-[5px] border border-line bg-surface py-[3px] pl-1.5 pr-2 text-[12px] font-medium leading-none text-fg/90",
     href && "transition-colors hover:border-fg/40 hover:text-fg",
     className,
   );

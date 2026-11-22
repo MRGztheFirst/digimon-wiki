@@ -354,7 +354,7 @@ function MiniDigimon({ n }: { n?: GNode }) {
 
 function SmallPill({ color, children, title }: { color: string; children: React.ReactNode; title?: string }) {
   return (
-    <span title={title} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[3px] border border-line py-[2px] pl-1.5 pr-1.5 font-mono text-[10px] uppercase leading-none tracking-wide text-fg/80">
+    <span title={title} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[3px] border border-line py-[2px] pl-1.5 pr-1.5 text-[11px] font-medium leading-none text-fg/85">
       <span className="h-2.5 w-[3px] rounded-[1px]" style={{ background: color }} />
       {children}
     </span>

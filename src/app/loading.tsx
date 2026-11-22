@@ -1,7 +1,7 @@
 export default function Loading() {
   return (
     <div aria-busy="true" aria-live="polite">
-      <div className="fixed inset-x-0 top-14 z-50 h-0.5 overflow-hidden bg-line/60">
+      <div className="fixed inset-x-0 top-14 z-50 h-[3px] overflow-hidden bg-bar/40">
         <div className="loading-bar h-full w-1/3 bg-primary" />
       </div>
       <span className="sr-only">Carregando…</span>
