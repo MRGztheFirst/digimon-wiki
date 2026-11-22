@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 type MediaOpt = { id: number; name: string; kind: string };
 
 const MEDIA_FILTERS: [string, string][] = [
-  ["general", "Geral / oficial"],
+  ["general", "Geral"],
   ...(["anime", "movie", "game", "vpet", "manga", "card", "other"] as const).map((k) => [k, MEDIA_KINDS[k].plural] as [string, string]),
 ];
 
@@ -135,13 +135,6 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
               ))}
             </select>
           </FilterRow>
-          <FilterRow label="Confiabilidade">
-            {(Object.keys(STATUSES) as (keyof typeof STATUSES)[]).map((k) => (
-              <Chip key={k} active={statuses.has(k)} color={STATUSES[k].color} onClick={() => toggle(statuses, setStatuses, k)} title={STATUSES[k].long}>
-                {STATUSES[k].label}
-              </Chip>
-            ))}
-          </FilterRow>
           <FilterRow label="Tipo de evolução">
             {presentKinds.map((k) => {
               const info = EVOLUTION_KINDS[evoKindOf(k)];
@@ -190,7 +183,7 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
         </div>
         <p className="text-xs text-muted">
           {nodes.length} Digimon · {edges.length} conexões
-          {hiddenCount > 0 && ` · ${hiddenCount} ocultos pelos filtros`}. Nenhuma evolução é obrigatória: cada seta é uma possibilidade, com origem e contexto próprios — clique nela para ver.
+          {hiddenCount > 0 && ` · ${hiddenCount} ocultos pelos filtros`}. Clique em um Digimon ou em uma seta para ver detalhes.
         </p>
 
         {view === "tree" ? (
@@ -367,9 +360,8 @@ function SmallPill({ color, children, title }: { color: string; children: React.
     </span>
   );
 }
-function StatusPill({ s }: { s: string }) {
-  const st = STATUSES[statusOf(s)];
-  return <SmallPill color={st.color} title={st.long}>{st.label}</SmallPill>;
+function StatusPill(_props: { s: string }) {
+  return null;
 }
 function KindPill({ k }: { k: string }) {
   const info = EVOLUTION_KINDS[evoKindOf(k)];
@@ -472,11 +464,9 @@ export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> })
         </div>
       )}
       {e.notes && <p className="rounded-[4px] bg-surface-2 p-2.5 text-sm">{e.notes}</p>}
-      <div>
+      {e.contexts.length > 0 && <div>
         <div className="mb-1.5 label">Onde essa evolução aparece</div>
-        {e.contexts.length === 0 ? (
-          <p className="text-xs italic text-muted">Nenhuma mídia específica associada. Evolução registrada de forma geral.</p>
-        ) : (
+        {(
           <ul className="space-y-2">
             {e.contexts.map((c) => (
               <li key={c.mediaId} className="rounded-[4px] border border-line p-2.5">
@@ -484,32 +474,18 @@ export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> })
                   <Link href={`/universos/${c.mediaSlug}`} className="text-sm font-semibold hover:text-primary">{c.mediaName}</Link>
                   <span className="shrink-0 text-[11px] text-muted">{MEDIA_KIND_LABEL(c.mediaKind)}</span>
                 </div>
-                <div className="mt-1 text-xs">
-                  <span className="text-muted">Requisitos: </span>
-                  {c.requirements ?? <span className="italic text-muted">não documentados</span>}
-                </div>
+                {c.requirements && (
+                  <div className="mt-1 text-xs">
+                    <span className="text-muted">Requisitos: </span>
+                    {c.requirements}
+                  </div>
+                )}
                 {c.notes && <div className="mt-1 text-xs text-muted">{c.notes}</div>}
-                <div className="mt-1.5 flex items-center justify-between gap-2">
-                  <StatusPill s={c.status} />
-                  {c.source?.url && (
-                    <a href={c.source.url} target="_blank" rel="noreferrer" className="text-[11px] text-accent hover:underline">Fonte</a>
-                  )}
-                </div>
               </li>
             ))}
           </ul>
         )}
-      </div>
-      {e.source && (
-        <div className="text-xs text-muted">
-          Fonte geral:{" "}
-          {e.source.url ? (
-            <a href={e.source.url} target="_blank" rel="noreferrer" className="text-accent hover:underline">{e.source.title}</a>
-          ) : (
-            e.source.title
-          )}
-        </div>
-      )}
+      </div>}
     </div>
   );
 }

@@ -28,7 +28,7 @@ export default async function Curiosities() {
   return (
     <div>
       <PageHeader crumbs={[[null, "Curiosidades"]]} eyebrow="Descubra" title="Curiosidades e informações adicionais"
-        subtitle="Fatos com fonte, fusões, variantes, grupos lendários e a cronologia das obras. Cada curiosidade mostra seu nível de confiabilidade." />
+        subtitle="Fusões, variantes, grupos lendários e a cronologia das obras." />
       <Container className="space-y-14 py-10">
         <Section title="Curiosidades" icon={<Lightbulb size={20} />}>
           {trivia.length ? (

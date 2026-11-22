@@ -22,18 +22,12 @@ export function Pill({ color, children, className, title, href, icon }: { color?
   );
 }
 
-export function StatusBadge({ status, className, compact }: { status?: string | null; className?: string; compact?: boolean }) {
-  const s = STATUSES[statusOf(status)];
-  return (
-    <Pill color={s.color} title={s.long} className={className}>
-      {compact ? s.label.split(" ")[0] : s.label}
-    </Pill>
-  );
+export function StatusBadge(_props: { status?: string | null; className?: string; compact?: boolean }) {
+  return null;
 }
 
-export function ReviewBadge({ status }: { status?: string | null }) {
-  const s = REVIEW_STATUSES[reviewOf(status)];
-  return <Pill color={s.color} title={s.long}>{s.label}</Pill>;
+export function ReviewBadge(_props: { status?: string | null }) {
+  return null;
 }
 
 export function EvoKindBadge({ kind, className }: { kind?: string | null; className?: string }) {

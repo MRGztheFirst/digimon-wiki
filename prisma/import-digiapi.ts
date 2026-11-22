@@ -270,7 +270,7 @@ async function main() {
       kind,
       status: "official",
       requirements: p.conditions.size ? [...p.conditions].join(" / ") : null,
-      notes: "Evolução registrada na Wikimon a partir de material oficial. A obra específica (jogo, anime, V-Pet...) não está indicada na fonte.",
+      notes: null,
       sourceId: wikimon,
       imported: true,
     };

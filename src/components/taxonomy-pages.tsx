@@ -98,11 +98,6 @@ export async function TaxonomyTermPage({ kind, slug, page }: { kind: TaxonomyKin
             </div>
           )}
           <Section title={`Digimon (${result.total})`} action={<Link href={`/digimon?${t.filterKey}=${slug}`} className="text-sm font-medium text-accent hover:underline">Refinar na busca avançada →</Link>}>
-            {unconfirmedFamily > 0 && (
-              <p className="mb-3 flex items-center gap-2 text-xs text-muted">
-                <StatusBadge status="unconfirmed" /> {unconfirmedFamily} associações a esta família ainda não foram confirmadas — veja a página de cada Digimon.
-              </p>
-            )}
             <DigimonGrid items={result.items} empty="Nenhum Digimon cadastrado nesta classificação ainda." />
             <Pagination page={result.page} total={result.total} pageSize={result.pageSize} makeHref={(p) => `/${kind}/${slug}?pagina=${p}`} />
           </Section>

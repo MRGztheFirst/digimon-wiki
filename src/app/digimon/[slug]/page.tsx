@@ -92,15 +92,17 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
   ]);
 
   const appearancesByKind = MEDIA_KIND_KEYS.map((k) => [k, d.appearances.filter((a) => mediaKindOf(a.media.kind) === k)] as const);
-  const review = REVIEW_STATUSES[reviewOf(d.reviewStatus)];
-  const sources = new Map<number, { title: string; url: string | null; kind: string }>();
-  [...d.citations.map((c) => c.source), ...d.attacks.map((a) => a.source), ...d.trivia.map((t) => t.source), ...d.families.map((f) => f.source), ...d.appearances.map((a) => a.source)]
-    .forEach((s) => s && sources.set(s.id, s));
 
-  const toc = [
-    ["visao-geral", "Visão geral"], ["classificacao", "Classificação"], ["caracteristicas", "Características"], ["golpes", "Golpes e habilidades"],
-    ["evolucoes", "Evoluções"], ["aparicoes", "Aparições"], ["curiosidades", "Curiosidades"], ["relacionados", "Relacionados"], ["fontes", "Fontes"],
-  ];
+  const hasChar = !!(d.physical || d.personality || d.combat);
+  const hasAttacks = d.attacks.length > 0 || d.abilities.length > 0;
+  const hasApp = d.appearances.length > 0;
+  const hasTrivia = d.trivia.length > 0;
+  const hasRelated = related.length > 0 || similar.length > 0;
+  const toc = ([
+    ["visao-geral", "Visão geral", true], ["classificacao", "Classificação", true], ["caracteristicas", "Características", hasChar],
+    ["golpes", "Golpes e habilidades", hasAttacks], ["evolucoes", "Evoluções", true], ["aparicoes", "Aparições", hasApp],
+    ["curiosidades", "Curiosidades", hasTrivia], ["relacionados", "Relacionados", hasRelated],
+  ] as const).filter(([, , show]) => show);
 
   return (
     <div>
@@ -110,7 +112,6 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
           <div className="grid gap-8 md:grid-cols-[minmax(0,22rem)_1fr] md:items-end">
             <div>
               <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe className="aspect-square w-full max-w-[22rem]" />
-              {d.imageUrl && d.imageCredit && <div className="mt-2 font-mono text-[10px] uppercase tracking-wide text-muted">{d.imageCredit}</div>}
             </div>
             <div className="min-w-0">
               <div className="label">Nº {padNumber(d.number).slice(1)}{d.stage ? ` · ${d.stage.name}` : ""}</div>
@@ -148,16 +149,6 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
         </aside>
 
         <div className="min-w-0 space-y-12">
-          {d.reviewStatus !== "verified" && (
-            <div className="flex gap-3 border-l-2 bg-surface py-3 pl-4 pr-4 text-sm" style={{ borderColor: review.color }}>
-              <AlertTriangle size={18} className="mt-0.5 shrink-0" style={{ color: review.color }} />
-              <div>
-                <div className="font-semibold">Registro {review.label.toLowerCase()}</div>
-                <div className="text-muted">{review.long} Campos sem fonte confiável ficam como &quot;Não documentado&quot; em vez de serem preenchidos por suposição.</div>
-              </div>
-            </div>
-          )}
-
           <Section id="visao-geral" title="Visão geral" icon={<Info size={18} />}>
             <div className="card p-5">
               <div className="prose-wiki">
@@ -165,10 +156,9 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
               </div>
               {(d.profileJp || d.profileEn) && (
                 <figure className={d.summary ? "mt-5 border-t border-line pt-5" : ""}>
-                  <figcaption className="label mb-3">Perfil oficial · Digimon Reference Book</figcaption>
+                  <figcaption className="label mb-3">Perfil</figcaption>
                   {d.profileJp && <blockquote lang="ja" className="font-jp text-[15px] leading-8">{d.profileJp}</blockquote>}
                   {d.profileEn && <blockquote lang="en" className={`text-[15px] leading-7 text-muted ${d.profileJp ? "mt-4" : ""}`}>{d.profileEn}</blockquote>}
-                  <p className="mt-3 text-xs text-muted">Texto original da Bandai, sem tradução, conforme reproduzido na Wikimon.</p>
                 </figure>
               )}
               <dl className="mt-4">
@@ -179,7 +169,6 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                 <Field label="Significado do nome">{d.nameMeaning}</Field>
                 <Field label="Origem do design">{d.designOrigin}</Field>
                 <Field label="Primeira aparição">{d.firstAppearance && `${d.firstAppearance}${d.firstYear ? ` (${d.firstYear})` : ""}`}</Field>
-                <Field label="Revisão"><ReviewBadge status={d.reviewStatus} /></Field>
               </dl>
             </div>
           </Section>
@@ -202,7 +191,6 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                     {d.families.map((f) => (
                       <span key={f.familyId} className="inline-flex items-center gap-1.5">
                         <FamilyBadge family={f.family} />
-                        {f.status !== "official" && <StatusBadge status={f.status} compact />}
                       </span>
                     ))}
                   </span>
@@ -220,17 +208,17 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
             </dl>
           </Section>
 
-          <Section id="caracteristicas" title="Características" icon={<Sparkles size={18} />}>
+          {hasChar && <Section id="caracteristicas" title="Características" icon={<Sparkles size={18} />}>
             <dl className="card px-5 py-2">
               <Field label="Descrição física">{d.physical}</Field>
               <Field label="Personalidade">{d.personality}</Field>
               <Field label="Combate">{d.combat}</Field>
             </dl>
-          </Section>
+          </Section>}
 
-          <Section id="golpes" title="Golpes e habilidades" icon={<Swords size={18} />}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="card p-5">
+          {hasAttacks && <Section id="golpes" title="Golpes e habilidades" icon={<Swords size={18} />}>
+            <div className={d.attacks.length && d.abilities.length ? "grid gap-4 md:grid-cols-2" : "grid gap-4"}>
+              {d.attacks.length > 0 && <div className="card p-5">
                 <h3 className="mb-3 font-semibold">Golpes e ataques</h3>
                 {d.attacks.length ? (
                   <ul className="space-y-3">
@@ -239,15 +227,14 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-semibold">{a.name}</span>
                           {a.localizedName && <span className="text-xs text-muted">Localizado: {a.localizedName}</span>}
-                          {a.status !== "official" && <StatusBadge status={a.status} />}
                         </div>
                         {a.description && <p className="text-sm text-muted">{a.description}</p>}
                       </li>
                     ))}
                   </ul>
-                ) : <Missing>Nenhum golpe cadastrado.</Missing>}
-              </div>
-              <div className="card p-5">
+                ) : null}
+              </div>}
+              {d.abilities.length > 0 && <div className="card p-5">
                 <h3 className="mb-3 font-semibold">Habilidades especiais</h3>
                 {d.abilities.length ? (
                   <ul className="space-y-3">
@@ -258,13 +245,13 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                       </li>
                     ))}
                   </ul>
-                ) : <Missing>Nenhuma habilidade cadastrada.</Missing>}
-              </div>
+                ) : null}
+              </div>}
             </div>
-          </Section>
+          </Section>}
 
           <Section id="evolucoes" title="Evoluções" icon={<GitBranch size={18} />} action={<Link href={`/linhas/${d.slug}`} className="text-sm font-medium text-accent hover:underline">Árvore completa →</Link>}
-            description="Possibilidades evolutivas diretas. Nenhuma é obrigatória — cada uma indica em quais obras aparece.">
+>
             <div className="grid gap-4 md:grid-cols-2">
               <EvoColumn title="Evolui a partir de" icon={<ArrowLeft size={16} />} items={prev} self={d.name} direction="prev" />
               <EvoColumn title="Pode evoluir para" icon={<ArrowRight size={16} />} items={next} self={d.name} direction="next" />
@@ -280,9 +267,9 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
             )}
           </Section>
 
-          <Section id="aparicoes" title="Aparições" icon={<Tv size={18} />}>
+          {hasApp && <Section id="aparicoes" title="Aparições" icon={<Tv size={18} />}>
             <div className="grid gap-4 md:grid-cols-2">
-              {appearancesByKind.map(([k, list]) => (
+              {appearancesByKind.filter(([, list]) => list.length > 0).map(([k, list]) => (
                 <div key={k} className="card p-5">
                   <h3 className="mb-3 flex items-center justify-between font-semibold">
                     {MEDIA_KINDS[k].plural}
@@ -295,7 +282,6 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                           <div className="flex flex-wrap items-center gap-2">
                             <Link href={`/universos/${a.media.slug}`} className="font-semibold hover:text-primary">{a.media.name}</Link>
                             {a.media.year && <span className="text-xs text-muted">{a.media.year}</span>}
-                            {a.status !== "media" && <StatusBadge status={a.status} />}
                           </div>
                           {(a.role || a.form) && <div className="text-muted">{[a.role, a.form && `Forma: ${a.form}`].filter(Boolean).join(" · ")}</div>}
                         </li>
@@ -305,55 +291,33 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                 </div>
               ))}
             </div>
-          </Section>
+          </Section>}
 
-          <Section id="curiosidades" title="Curiosidades" icon={<Sparkles size={18} />}>
+          {hasTrivia && <Section id="curiosidades" title="Curiosidades" icon={<Sparkles size={18} />}>
             {d.trivia.length ? (
               <ul className="space-y-2">
                 {d.trivia.map((t) => (
                   <li key={t.id} className="card flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:justify-between">
                     <p className="text-sm">{t.text}</p>
-                    <StatusBadge status={t.status} />
                   </li>
                 ))}
               </ul>
-            ) : <EmptyState>Nenhuma curiosidade cadastrada com fonte.</EmptyState>}
-          </Section>
+            ) : null}
+          </Section>}
 
-          <Section id="relacionados" title="Relacionados" icon={<Sparkles size={18} />}>
+          {hasRelated && <Section id="relacionados" title="Relacionados" icon={<Sparkles size={18} />}>
             <div className="space-y-6">
-              <div>
+              {related.length > 0 && <div>
                 <h3 className="mb-3 text-sm font-semibold text-muted">Digimon relacionados (mesmo grupo, tipo ou família)</h3>
-                {related.length ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">{related.map((r) => <DigimonCard key={r.id} d={r} />)}</div> : <Missing>Nenhum encontrado.</Missing>}
-              </div>
-              <div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">{related.map((r) => <DigimonCard key={r.id} d={r} />)}</div>
+              </div>}
+              {similar.length > 0 && <div>
                 <h3 className="mb-3 text-sm font-semibold text-muted">Nomes semelhantes</h3>
-                {similar.length ? <div className="flex flex-wrap gap-2">{similar.map((r) => <DigimonChip key={r.id} d={r} size="sm" />)}</div> : <Missing>Nenhum encontrado.</Missing>}
-              </div>
+                <div className="flex flex-wrap gap-2">{similar.map((r) => <DigimonChip key={r.id} d={r} size="sm" />)}</div>
+              </div>}
             </div>
-          </Section>
+          </Section>}
 
-          <Section id="fontes" title="Fontes e referências" icon={<BookMarked size={18} />}>
-            <div className="card p-5">
-              <ul className="space-y-2 text-sm">
-                {d.citations.map((c) => (
-                  <li key={c.id} className="flex flex-wrap items-center gap-2">
-                    <a href={c.url ?? c.source.url ?? "#"} target="_blank" rel="noreferrer" className="font-medium text-accent hover:underline">{c.source.title}</a>
-                    <span className="text-muted">{c.field === "*" ? "registro" : c.field}</span>
-                    {c.note && <span className="text-muted">— {c.note}</span>}
-                  </li>
-                ))}
-                {[...sources.values()].filter((s) => !d.citations.some((c) => c.source.title === s.title)).map((s) => (
-                  <li key={s.title}>
-                    {s.url ? <a href={s.url} target="_blank" rel="noreferrer" className="font-medium text-accent hover:underline">{s.title}</a> : s.title}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 text-xs text-muted">
-                Prioridade de fontes: Digimon Reference Book e materiais oficiais, seguidos da Wikimon. Veja a <Link href="/fontes" className="text-accent hover:underline">legenda de confiabilidade</Link>.
-              </p>
-            </div>
-          </Section>
         </div>
       </Container>
     </div>
@@ -372,10 +336,6 @@ function EvoColumn({ title, icon, items, self, direction }: {
       {items.length === 0 && <Missing>Nenhuma evolução cadastrada.</Missing>}
       {listed.length > 0 && (
         <div className={curated.length ? "order-last mt-4 border-t border-line pt-4" : ""}>
-          <div className="label mb-1">Listadas na Wikimon · {listed.length}</div>
-          <p className="mb-3 text-xs text-muted">
-            Evoluções oficiais registradas na Wikimon. A fonte não indica em qual obra cada uma acontece, e nenhuma é obrigatória.
-          </p>
           <ul className="flex flex-wrap gap-1.5">
             {listed.map((e) => (
               <li key={`${e.id}-${e.target.id}`} className="flex items-center gap-1.5">
@@ -401,7 +361,6 @@ function EvoColumn({ title, icon, items, self, direction }: {
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {e.kind !== "normal" && <EvoKindBadge kind={e.kind} />}
-                <StatusBadge status={e.status} />
               </div>
               {e.requirements && <div className="mt-1.5 text-xs"><span className="text-muted">Requisito: </span>{e.requirements}</div>}
               {e.notes && <div className="mt-1 text-xs text-muted">{e.notes}</div>}

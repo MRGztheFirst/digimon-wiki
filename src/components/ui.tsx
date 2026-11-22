@@ -65,11 +65,12 @@ export function SeeAll({ href, children = "Ver todos" }: { href: string; childre
 }
 
 export function Field({ label, children, missing }: { label: string; children?: React.ReactNode; missing?: boolean }) {
-  const empty = missing || children == null || children === "" || (Array.isArray(children) && children.length === 0);
+  const empty = missing || children == null || children === false || children === "" || (Array.isArray(children) && children.length === 0);
+  if (empty) return null;
   return (
     <div className="flex flex-col gap-1 border-b border-line/70 py-3 last:border-0 sm:flex-row sm:gap-6">
       <dt className="label w-44 shrink-0 sm:pt-1">{label}</dt>
-      <dd className="min-w-0 flex-1 text-sm leading-relaxed">{empty ? <Missing /> : children}</dd>
+      <dd className="min-w-0 flex-1 text-sm leading-relaxed">{children}</dd>
     </div>
   );
 }
