@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "./db";
+import { getI18n } from "@/i18n/server";
 
 export const TAXONOMIES = {
   estagios: {
@@ -48,27 +49,30 @@ export type TaxItem = {
 };
 
 export async function listTaxonomy(kind: TaxonomyKind): Promise<TaxItem[]> {
+  const { locale, t, td, ln } = await getI18n();
+  const ja = locale === "ja";
   switch (kind) {
     case "estagios":
       return (await db.stage.findMany({ orderBy: [{ order: "asc" }, { isSpecial: "asc" }], include: { _count: { select: { digimon: true } } } })).map((s) => ({
-        slug: s.slug, name: s.name, subtitle: [s.nameEn, s.nameJp && `${s.nameJp} (${s.romaji})`].filter(Boolean).join(" · "),
-        description: s.description, color: s.color, count: s._count.digimon, special: s.isSpecial,
+        slug: s.slug, name: ln(s),
+        subtitle: [s.nameEn, ja ? s.romaji : s.nameJp && `${s.nameJp} (${s.romaji})`].filter(Boolean).join(" · "),
+        description: td(s.description), color: s.color, count: s._count.digimon, special: s.isSpecial,
       }));
     case "atributos":
       return (await db.attribute.findMany({ include: { _count: { select: { digimon: true } } } })).map((a) => ({
-        slug: a.slug, name: a.name, subtitle: a.nameJp, description: a.description, details: a.details, color: a.color, count: a._count.digimon,
+        slug: a.slug, name: ln(a), subtitle: ja ? a.name.split(" (")[0] : a.nameJp, description: td(a.description), details: td(a.details), color: a.color, count: a._count.digimon,
       }));
     case "tipos":
-      return (await db.digimonType.findMany({ orderBy: { name: "asc" }, include: { _count: { select: { digimon: true } } } })).map((t) => ({
-        slug: t.slug, name: t.name, subtitle: t.nameJp, description: t.description, color: "#22d3ee", count: t._count.digimon,
+      return (await db.digimonType.findMany({ orderBy: { name: "asc" }, include: { _count: { select: { digimon: true } } } })).map((ty) => ({
+        slug: ty.slug, name: ln(ty), subtitle: ja ? null : ty.nameJp, description: td(ty.description), color: "#22d3ee", count: ty._count.digimon,
       }));
     case "familias":
       return (await db.family.findMany({ orderBy: { name: "asc" }, include: { _count: { select: { digimon: true } } } })).map((f) => ({
-        slug: f.slug, name: f.name, subtitle: [f.abbr, f.nameJp].filter(Boolean).join(" · "), description: f.description, color: f.color, count: f._count.digimon,
+        slug: f.slug, name: ln(f), subtitle: [f.abbr, ja ? f.name : f.nameJp].filter(Boolean).join(" · "), description: td(f.description), color: f.color, count: f._count.digimon,
       }));
     case "grupos":
       return (await db.group.findMany({ orderBy: [{ legendary: "desc" }, { name: "asc" }], include: { _count: { select: { members: true } } } })).map((g) => ({
-        slug: g.slug, name: g.name, subtitle: g.nameJp, description: g.description, color: g.legendary ? "#facc15" : "#94a3b8", count: g._count.members, legendary: g.legendary,
+        slug: g.slug, name: ln(g), subtitle: ja ? (g.nameJp ? t(g.name) === g.nameJp ? null : t(g.name) : null) : g.nameJp, description: td(g.description), color: g.legendary ? "#facc15" : "#94a3b8", count: g._count.members, legendary: g.legendary,
       }));
   }
 }

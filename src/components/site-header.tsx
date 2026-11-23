@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { LanguageSelect } from "./language-select";
 import { SearchBox } from "./search-box";
 import { Logo, Wordmark } from "./logo";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
 
 const NAV = [
   { href: "/digimon", label: "Enciclopédia" },
@@ -19,6 +21,7 @@ const NAV = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
   if (pathname.startsWith("/admin")) return null;
@@ -26,11 +29,11 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 bg-bar text-bar-fg shadow-[0_1px_0_rgba(0,0,0,.12)]">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 md:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="Digimon Database — início">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={t("Digimon Database — início")}>
           <Logo onBar />
           <Wordmark className="text-[17px] sm:text-[19px]" />
         </Link>
-        <nav className="hidden h-full items-stretch gap-5 lg:flex" aria-label="Principal">
+        <nav className="hidden h-full items-stretch gap-5 lg:flex" aria-label={t("Principal")}>
           {NAV.map((n) => {
             const active = pathname === n.href || pathname.startsWith(n.href + "/");
             return (
@@ -42,7 +45,7 @@ export function SiteHeader() {
                   active ? "border-white font-medium text-white" : "border-transparent text-white/75 hover:text-white",
                 )}
               >
-                {n.label}
+                {t(n.label)}
               </Link>
             );
           })}
@@ -53,11 +56,12 @@ export function SiteHeader() {
               <SearchBox compact />
             </div>
           )}
+          <LanguageSelect onBar />
           <ThemeToggle onBar />
           <button
             className="btn h-9 w-9 border-white/25 p-0 text-white hover:border-white/60 lg:hidden"
             onClick={() => setOpen((o) => !o)}
-            aria-label={open ? "Fechar menu" : "Abrir menu"}
+            aria-label={open ? t("Fechar menu") : t("Abrir menu")}
             aria-expanded={open}
           >
             {open ? <X size={17} /> : <Menu size={17} />}
@@ -69,10 +73,10 @@ export function SiteHeader() {
           <div className="mb-3 md:hidden">
             <SearchBox compact />
           </div>
-          <nav className="grid" aria-label="Principal (móvel)">
+          <nav className="grid" aria-label={t("Principal (móvel)")}>
             {NAV.map((n) => (
               <Link key={n.href} href={n.href} className="border-b border-white/15 py-3 text-[15px] text-white last:border-0">
-                {n.label}
+                {t(n.label)}
               </Link>
             ))}
           </nav>

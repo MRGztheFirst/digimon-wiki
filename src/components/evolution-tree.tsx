@@ -9,6 +9,7 @@ import { EVOLUTION_KINDS, MEDIA_KINDS, STATUSES, evoKindOf, mediaKindOf, statusO
 import { DigimonAvatar } from "./digimon-avatar";
 import { AttributeIcon } from "./icons";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
 
 type MediaOpt = { id: number; name: string; kind: string };
 
@@ -24,6 +25,7 @@ function lineStyle(status: string) {
 }
 
 export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { graph: GraphData; mediaOptions: MediaOpt[]; initialMediaId?: number | null }) {
+  const { t } = useI18n();
   const presentKinds = useMemo(() => [...new Set(graph.edges.map((e) => e.kind))], [graph]);
   const presentMediaKinds = useMemo(() => {
     const s = new Set<string>();
@@ -115,37 +117,37 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
     <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
       <div className="min-w-0 space-y-3">
         <div className="card space-y-3 p-4">
-          <FilterRow label="Mídia">
+          <FilterRow label={t("Mídia")}>
             {MEDIA_FILTERS.filter(([k]) => presentMediaKinds.has(k)).map(([k, label]) => (
               <Chip key={k} active={mediaKinds.has(k) && mediaId == null} disabled={mediaId != null} onClick={() => toggle(mediaKinds, setMediaKinds, k)}>
-                {label}
+                {t(label)}
               </Chip>
             ))}
             <select
               className="input h-8 w-auto max-w-full py-0 text-xs"
               value={mediaId ?? ""}
               onChange={(e) => setMediaId(e.target.value ? Number(e.target.value) : null)}
-              aria-label="Somente uma obra específica"
+              aria-label={t("Somente uma obra específica")}
             >
-              <option value="">Todas as obras</option>
+              <option value="">{t("Todas as obras")}</option>
               {graphMedia.map((m) => (
                 <option key={m.id} value={m.id}>
-                  Somente: {m.name}
+                  {t("Somente: {name}", { name: m.name })}
                 </option>
               ))}
             </select>
           </FilterRow>
-          <FilterRow label="Tipo de evolução">
+          <FilterRow label={t("Tipo de evolução")}>
             {presentKinds.map((k) => {
               const info = EVOLUTION_KINDS[evoKindOf(k)];
               return (
-                <Chip key={k} active={kinds.has(k)} color={info.color} onClick={() => toggle(kinds, setKinds, k)} title={info.description}>
-                  {info.label}
+                <Chip key={k} active={kinds.has(k)} color={info.color} onClick={() => toggle(kinds, setKinds, k)} title={t(info.description)}>
+                  {t(info.label)}
                 </Chip>
               );
             })}
             <button className="text-xs font-medium text-accent hover:underline" onClick={() => setKinds(new Set(Object.keys(EVOLUTION_KINDS).filter((k) => k !== "normal")))}>
-              Só especiais
+              {t("Só especiais")}
             </button>
           </FilterRow>
         </div>
@@ -153,21 +155,21 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-[4px] border border-line p-0.5">
             <button className={cn("btn px-3 py-1.5", view === "tree" ? "bg-surface-2" : "")} onClick={() => setView("tree")}>
-              <Network size={15} /> Árvore
+              <Network size={15} /> {t("Árvore")}
             </button>
             <button className={cn("btn px-3 py-1.5", view === "list" ? "bg-surface-2" : "")} onClick={() => setView("list")}>
-              <List size={15} /> Lista
+              <List size={15} /> {t("Lista")}
             </button>
           </div>
           {view === "tree" && (
             <div className="flex items-center gap-1">
-              <button className="btn btn-ghost h-9 w-9 p-0" onClick={() => setZoom((z) => Math.max(0.4, +(z - 0.15).toFixed(2)))} aria-label="Diminuir zoom"><Minus size={15} /></button>
+              <button className="btn btn-ghost h-9 w-9 p-0" onClick={() => setZoom((z) => Math.max(0.4, +(z - 0.15).toFixed(2)))} aria-label={t("Diminuir zoom")}><Minus size={15} /></button>
               <span className="w-12 text-center text-xs tabular-nums text-muted">{Math.round(zoom * 100)}%</span>
-              <button className="btn btn-ghost h-9 w-9 p-0" onClick={() => setZoom((z) => Math.min(1.6, +(z + 0.15).toFixed(2)))} aria-label="Aumentar zoom"><Plus size={15} /></button>
+              <button className="btn btn-ghost h-9 w-9 p-0" onClick={() => setZoom((z) => Math.min(1.6, +(z + 0.15).toFixed(2)))} aria-label={t("Aumentar zoom")}><Plus size={15} /></button>
               <button
                 className="btn btn-ghost h-9 w-9 p-0"
-                title="Ajustar à tela"
-                aria-label="Ajustar à tela"
+                title={t("Ajustar à tela")}
+                aria-label={t("Ajustar à tela")}
                 onClick={() => {
                   const w = scrollRef.current?.clientWidth ?? 800;
                   setZoom(Math.max(0.4, Math.min(1, (w - 32) / layout.width)));
@@ -178,12 +180,12 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
             </div>
           )}
           <button className="btn btn-ghost ml-auto py-1.5 text-xs" onClick={reset}>
-            <RotateCcw size={14} /> Limpar filtros
+            <RotateCcw size={14} /> {t("Limpar filtros")}
           </button>
         </div>
         <p className="text-xs text-muted">
-          {nodes.length} Digimon · {edges.length} conexões
-          {hiddenCount > 0 && ` · ${hiddenCount} ocultos pelos filtros`}. Clique em um Digimon ou em uma seta para ver detalhes.
+          {t("{n} Digimon · {e} conexões", { n: nodes.length, e: edges.length })}
+          {hiddenCount > 0 && t(" · {n} ocultos pelos filtros", { n: hiddenCount })}. {t("Clique em um Digimon ou em uma seta para ver detalhes.")}
         </p>
 
         {view === "tree" ? (
@@ -223,7 +225,7 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
                           {i === 0 && e.kind !== "normal" && (
                             <g transform={`translate(${mx},${my})`}>
                               <rect x={-24} y={-9} width={48} height={18} rx={9} fill="var(--surface)" stroke={info.color} />
-                              <text textAnchor="middle" y={4} fontSize={10} fontWeight={700} fill={info.color}>{info.short}</text>
+                              <text textAnchor="middle" y={4} fontSize={10} fontWeight={700} fill={info.color}>{t(info.short)}</text>
                             </g>
                           )}
                         </g>
@@ -260,11 +262,11 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
           ) : selEdge ? (
             <EdgeDetails e={selEdge} byId={byId} />
           ) : (
-            <p className="text-sm text-muted">Selecione um Digimon ou uma conexão para ver os detalhes.</p>
+            <p className="text-sm text-muted">{t("Selecione um Digimon ou uma conexão para ver os detalhes.")}</p>
           )}
           {selected && (
             <button className="mt-4 flex items-center gap-1 text-xs text-muted hover:text-fg" onClick={() => setSelected(null)}>
-              <X size={12} /> Limpar seleção
+              <X size={12} /> {t("Limpar seleção")}
             </button>
           )}
         </div>
@@ -274,6 +276,7 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
 }
 
 function TreeNode({ n, x, y, root, selected, dim, onClick, onHover }: { n: GNode; x: number; y: number; root: boolean; selected: boolean; dim: boolean; onClick: () => void; onHover: (h: boolean) => void }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
@@ -287,7 +290,7 @@ function TreeNode({ n, x, y, root, selected, dim, onClick, onHover }: { n: GNode
         root ? "border-primary" : "border-line",
       )}
       style={{ left: x, top: y, width: NODE_W, height: NODE_H, opacity: dim ? 0.3 : 1 }}
-      title={`${n.name} — ${n.stageName}. Duplo clique abre a página.`}
+      title={t("{name} — {stage}. Duplo clique abre a página.", { name: n.name, stage: n.stageName })}
     >
       <DigimonAvatar name={n.name} imageUrl={n.imageUrl} className="h-[50px] w-[50px] shrink-0" />
       <span className="min-w-0">
@@ -332,12 +335,13 @@ function Chip({ active, onClick, children, color, title, disabled }: { active: b
 }
 
 function Legend() {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
-      <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" /></svg>Oficial / da mídia</span>
-      <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" strokeDasharray="6 5" /></svg>Não confirmada</span>
-      <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" strokeDasharray="2 5" /></svg>Comunidade (não oficial)</span>
-      <span>A cor da linha indica o tipo de evolução. Borda laranja = Digimon central.</span>
+      <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" /></svg>{t("Oficial / da mídia")}</span>
+      <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" strokeDasharray="6 5" /></svg>{t("Não confirmada")}</span>
+      <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" strokeDasharray="2 5" /></svg>{t("Comunidade (não oficial)")}</span>
+      <span>{t("A cor da linha indica o tipo de evolução. Borda destacada = Digimon central.")}</span>
     </div>
   );
 }
@@ -364,11 +368,13 @@ function StatusPill(_props: { s: string }) {
   return null;
 }
 function KindPill({ k }: { k: string }) {
+  const { t } = useI18n();
   const info = EVOLUTION_KINDS[evoKindOf(k)];
-  return <SmallPill color={info.color} title={info.description}>{info.label}</SmallPill>;
+  return <SmallPill color={info.color} title={t(info.description)}>{t(info.label)}</SmallPill>;
 }
 
 function NodeDetails({ n, root, edges, byId, onEdge }: { n: GNode; root: boolean; edges: GEdge[]; byId: Map<number, GNode>; onEdge: (id: number) => void }) {
+  const { t } = useI18n();
   const from = edges.filter((e) => e.to === n.id);
   const to = edges.filter((e) => e.from === n.id || e.partners.includes(n.id));
   return (
@@ -387,26 +393,27 @@ function NodeDetails({ n, root, edges, byId, onEdge }: { n: GNode; root: boolean
       </div>
       <div className="flex flex-wrap gap-2">
         <Link href={`/digimon/${n.slug}`} className="btn btn-primary flex-1">
-          <ExternalLink size={15} /> Abrir página
+          <ExternalLink size={15} /> {t("Abrir página")}
         </Link>
         {!root && (
           <Link href={`/linhas/${n.slug}`} className="btn btn-ghost flex-1">
-            <Focus size={15} /> Centralizar árvore
+            <Focus size={15} /> {t("Centralizar árvore")}
           </Link>
         )}
       </div>
-      <EdgeGroup title="Evolui a partir de" edges={from} byId={byId} pick={(e) => [e.from, ...e.partners]} onEdge={onEdge} />
-      <EdgeGroup title="Pode evoluir para" edges={to} byId={byId} pick={(e) => [e.to]} onEdge={onEdge} />
+      <EdgeGroup title={t("Evolui a partir de")} edges={from} byId={byId} pick={(e) => [e.from, ...e.partners]} onEdge={onEdge} />
+      <EdgeGroup title={t("Pode evoluir para")} edges={to} byId={byId} pick={(e) => [e.to]} onEdge={onEdge} />
     </div>
   );
 }
 
 function EdgeGroup({ title, edges, byId, pick, onEdge }: { title: string; edges: GEdge[]; byId: Map<number, GNode>; pick: (e: GEdge) => number[]; onEdge: (id: number) => void }) {
+  const { t } = useI18n();
   return (
     <div>
       <div className="mb-1.5 label">{title}</div>
       {edges.length === 0 ? (
-        <p className="text-xs italic text-muted">Nenhuma conexão visível com os filtros atuais.</p>
+        <p className="text-xs italic text-muted">{t("Nenhuma conexão visível com os filtros atuais.")}</p>
       ) : (
         <ul className="space-y-1">
           {edges.map((e) => (
@@ -422,10 +429,10 @@ function EdgeGroup({ title, edges, byId, pick, onEdge }: { title: string; edges:
                   );
                 })}
               </span>
-              <button onClick={() => onEdge(e.id)} className="flex shrink-0 items-center gap-1 text-[11px] text-muted hover:text-fg" title="Ver detalhes desta evolução">
+              <button onClick={() => onEdge(e.id)} className="flex shrink-0 items-center gap-1 text-[11px] text-muted hover:text-fg" title={t("Ver detalhes desta evolução")}>
                 {e.kind !== "normal" && <KindPill k={e.kind} />}
                 {e.status !== "official" && <StatusPill s={e.status} />}
-                <span className="underline-offset-2 hover:underline">detalhes</span>
+                <span className="underline-offset-2 hover:underline">{t("detalhes")}</span>
               </button>
             </li>
           ))}
@@ -436,11 +443,12 @@ function EdgeGroup({ title, edges, byId, pick, onEdge }: { title: string; edges:
 }
 
 export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> }) {
-  const MEDIA_KIND_LABEL = (k: string) => MEDIA_KINDS[mediaKindOf(k)].label;
+  const { t } = useI18n();
+  const MEDIA_KIND_LABEL = (k: string) => t(MEDIA_KINDS[mediaKindOf(k)].label);
   return (
     <div className="space-y-4">
       <div>
-        <div className="mb-2 label">Conexão evolutiva</div>
+        <div className="mb-2 label">{t("Conexão evolutiva")}</div>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <MiniDigimon n={byId.get(e.from)} />
           {e.partners.map((p) => (
@@ -459,13 +467,13 @@ export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> })
       </div>
       {e.requirements && (
         <div>
-          <div className="label">Requisitos gerais</div>
+          <div className="label">{t("Requisitos gerais")}</div>
           <p className="text-sm">{e.requirements}</p>
         </div>
       )}
       {e.notes && <p className="rounded-[4px] bg-surface-2 p-2.5 text-sm">{e.notes}</p>}
       {e.contexts.length > 0 && <div>
-        <div className="mb-1.5 label">Onde essa evolução aparece</div>
+        <div className="mb-1.5 label">{t("Onde essa evolução aparece")}</div>
         {(
           <ul className="space-y-2">
             {e.contexts.map((c) => (
@@ -476,7 +484,7 @@ export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> })
                 </div>
                 {c.requirements && (
                   <div className="mt-1 text-xs">
-                    <span className="text-muted">Requisitos: </span>
+                    <span className="text-muted">{t("Requisitos:")} </span>
                     {c.requirements}
                   </div>
                 )}
@@ -491,6 +499,7 @@ export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> })
 }
 
 function EdgeList({ edges, byId, onSelect }: { edges: GEdge[]; byId: Map<number, GNode>; onSelect: (id: number) => void }) {
+  const { t } = useI18n();
   const sorted = [...edges].sort((a, b) => (byId.get(a.from)?.stageOrder ?? 0) - (byId.get(b.from)?.stageOrder ?? 0));
   return (
     <div className="card divide-y divide-line">
@@ -512,7 +521,7 @@ function EdgeList({ edges, byId, onSelect }: { edges: GEdge[]; byId: Map<number,
           </span>
         </button>
       ))}
-      {!sorted.length && <p className="p-6 text-center text-sm text-muted">Nenhuma conexão com os filtros atuais.</p>}
+      {!sorted.length && <p className="p-6 text-center text-sm text-muted">{t("Nenhuma conexão com os filtros atuais.")}</p>}
     </div>
   );
 }

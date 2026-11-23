@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { DigimonAvatar } from "./digimon-avatar";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
 
 export type SearchResult = {
   id: number;
@@ -17,7 +18,7 @@ export type SearchResult = {
   attribute: { name: string; color: string } | null;
 };
 
-export function useDigimonSearch(q: string) {
+export function useDigimonSearch(q: string, locale?: string) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -38,7 +39,7 @@ export function useDigimonSearch(q: string) {
       clearTimeout(t);
       ctrl.abort();
     };
-  }, [q]);
+  }, [q, locale]);
   return { results, loading };
 }
 
@@ -51,11 +52,12 @@ type Props = {
 };
 
 export function SearchBox({ compact, placeholder, onPick, autoFocus, className }: Props) {
+  const { locale, t } = useI18n();
   const router = useRouter();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
-  const { results, loading } = useDigimonSearch(q);
+  const { results, loading } = useDigimonSearch(q, locale);
   const listId = useId();
   const boxRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +106,7 @@ export function SearchBox({ compact, placeholder, onPick, autoFocus, className }
               submit();
             } else if (e.key === "Escape") setOpen(false);
           }}
-          placeholder={placeholder ?? (compact ? "Buscar Digimon..." : "Buscar por nome: Agumon, オメガモン, Tailmon...")}
+          placeholder={placeholder ?? (compact ? t("Buscar Digimon...") : t("Buscar por nome: Agumon, オメガモン, Tailmon..."))}
           className={cn(
             "w-full border border-line bg-surface text-fg transition-colors placeholder:text-muted/80 focus:border-primary focus:outline-none",
             compact ? "h-9 rounded-[6px] border-transparent pl-9 pr-3 text-sm" : "h-14 rounded-[8px] pl-12 pr-4 text-base shadow-sm sm:text-[17px]",
@@ -113,13 +115,13 @@ export function SearchBox({ compact, placeholder, onPick, autoFocus, className }
           aria-expanded={open && results.length > 0}
           aria-controls={listId}
           aria-autocomplete="list"
-          aria-label="Buscar Digimon"
+          aria-label={t("Buscar Digimon")}
         />
       </div>
       {open && q.trim() && (
         <div id={listId} role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[8px] border border-line bg-surface shadow-xl shadow-black/20">
           {results.length === 0 ? (
-            <div className="px-4 py-3 text-sm text-muted">{loading ? "Buscando..." : onPick ? "Nenhum resultado." : "Nenhum resultado. Pressione Enter para a busca avançada."}</div>
+            <div className="px-4 py-3 text-sm text-muted">{loading ? t("Buscando...") : onPick ? t("Nenhum resultado.") : t("Nenhum resultado. Pressione Enter para a busca avançada.")}</div>
           ) : (
             results.map((r, i) => (
               <button
@@ -143,7 +145,7 @@ export function SearchBox({ compact, placeholder, onPick, autoFocus, className }
           )}
           {!onPick && (
             <button type="button" onClick={() => router.push(`/digimon?q=${encodeURIComponent(q.trim())}`)} className="w-full border-t border-line px-3 py-2 text-left text-[13px] text-muted hover:bg-surface-2 hover:text-primary">
-              Ver todos os resultados na busca avançada →
+              {t("Ver todos os resultados na busca avançada")} →
             </button>
           )}
         </div>

@@ -11,8 +11,9 @@ import { Breadcrumbs, Container, Field, Missing, Section } from "@/components/ui
 import { MEDIA_KINDS, MEDIA_KIND_KEYS, REVIEW_STATUSES, mediaKindOf, reviewOf } from "@/lib/constants";
 import { padNumber, paragraphs } from "@/lib/utils";
 import { editorEnabled } from "@/lib/editor";
+import { getI18n } from "@/i18n/server";
 
-const ctxInclude = { include: { media: { select: { slug: true, name: true, kind: true } } } } as const;
+const ctxInclude = { include: { media: { select: { slug: true, name: true, nameJp: true, kind: true } } } } as const;
 
 async function load(slug: string) {
   return db.digimon.findUnique({
@@ -43,9 +44,10 @@ async function load(slug: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const { t, td } = await getI18n();
   const d = await db.digimon.findUnique({ where: { slug }, select: { name: true, summary: true, nameJp: true } });
-  if (!d) return { title: "Digimon não encontrado" };
-  return { title: d.name, description: d.summary ?? `${d.name} (${d.nameJp ?? ""}) na Digimon Database.` };
+  if (!d) return { title: t("Digimon não encontrado") };
+  return { title: d.name, description: td(d.summary) ?? t("{name} ({jp}) na Digimon Database.", { name: d.name, jp: d.nameJp ?? "" }) };
 }
 
 function splitCamel(name: string) {
@@ -54,6 +56,7 @@ function splitCamel(name: string) {
 
 export default async function DigimonPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const { locale, t, td, ln } = await getI18n();
   const d = await load(slug);
   if (!d) notFound();
   db.$executeRaw`UPDATE "Digimon" SET "viewCount" = "viewCount" + 1 WHERE "id" = ${d.id}`.catch(() => {});
@@ -62,7 +65,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
     id: number; kind: string; status: string; notes: string | null; requirements: string | null; imported: boolean;
     others: (typeof d.evolutionsFrom)[number]["to"][];
     target: (typeof d.evolutionsFrom)[number]["to"];
-    contexts: { media: { slug: string; name: string; kind: string }; requirements: string | null; status: string }[];
+    contexts: { media: { slug: string; name: string; nameJp: string | null; kind: string }; requirements: string | null; status: string }[];
   };
   const next: EvoItem[] = [
     ...d.evolutionsFrom.map((e) => ({ ...e, target: e.to, others: e.partners.map((p) => p.digimon) })),
@@ -99,39 +102,46 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
   const hasTrivia = d.trivia.length > 0;
   const hasRelated = related.length > 0 || similar.length > 0;
   const toc = ([
-    ["visao-geral", "Visão geral", true], ["classificacao", "Classificação", true], ["caracteristicas", "Características", hasChar],
-    ["golpes", "Golpes e habilidades", hasAttacks], ["evolucoes", "Evoluções", true], ["aparicoes", "Aparições", hasApp],
-    ["curiosidades", "Curiosidades", hasTrivia], ["relacionados", "Relacionados", hasRelated],
+    ["visao-geral", t("Visão geral"), true], ["classificacao", t("Classificação"), true], ["caracteristicas", t("Características"), hasChar],
+    ["golpes", t("Golpes e habilidades"), hasAttacks], ["evolucoes", t("Evoluções"), true], ["aparicoes", t("Aparições"), hasApp],
+    ["curiosidades", t("Curiosidades"), hasTrivia], ["relacionados", t("Relacionados"), hasRelated],
   ] as const).filter(([, , show]) => show);
+
+  const profiles = ([["ja", d.profileJp], ["en", d.profileEn]] as const)
+    .filter((p): p is readonly ["ja" | "en", string] => !!p[1])
+    .map(([lang, text]) => ({ lang, text }));
+  const profile = profiles.find((p) => p.lang === locale) ?? profiles.find((p) => p.lang === "en") ?? profiles[0];
+  const otherProfiles = profiles.filter((p) => p !== profile);
+  const summary = td(d.summary);
 
   return (
     <div>
       <div className="border-b border-line">
         <Container className="pb-10 pt-8">
-          <Breadcrumbs items={[["/digimon", "Enciclopédia"], [null, d.name]]} />
+          <Breadcrumbs items={[["/digimon", t("Enciclopédia")], [null, d.name]]} />
           <div className="grid gap-8 md:grid-cols-[minmax(0,22rem)_1fr] md:items-end">
             <div>
               <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe className="aspect-square w-full max-w-[22rem]" />
             </div>
             <div className="min-w-0">
-              <div className="label">Nº {padNumber(d.number).slice(1)}{d.stage ? ` · ${d.stage.name}` : ""}</div>
+              <div className="label">{t("Nº")} {padNumber(d.number).slice(1)}{d.stage ? ` · ${ln(d.stage)}` : ""}</div>
               <h1 className="mt-2 font-display text-5xl font-semibold leading-none tracking-tight md:text-6xl">{d.name}</h1>
               <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 {d.nameJp && <span className="font-jp text-xl">{d.nameJp}</span>}
                 {d.romaji && <span className="font-mono text-sm text-muted">{d.romaji}</span>}
               </div>
-              {d.otherNames && <div className="mt-2 text-sm text-muted">Em localizações: {d.otherNames}</div>}
+              {d.otherNames && <div className="mt-2 text-sm text-muted">{t("Em localizações:")} {td(d.otherNames)}</div>}
               <div className="mt-5 flex flex-wrap gap-1.5">
                 <StageBadge stage={d.stage} />
                 <AttributeBadge attribute={d.attribute} />
-                {d.types.map((t) => <Pill key={t.typeId} color="var(--muted)" href={`/tipos/${t.type.slug}`}>{t.type.name}</Pill>)}
-                {d.base && <Pill color="var(--primary)" href={`/digimon/${d.base.slug}`}>{d.variantKind ?? "Variante"} de {d.base.name}</Pill>}
+                {d.types.map((ty) => <Pill key={ty.typeId} color="var(--muted)" href={`/tipos/${ty.type.slug}`}>{ln(ty.type)}</Pill>)}
+                {d.base && <Pill color="var(--primary)" href={`/digimon/${d.base.slug}`}>{t("{kind} de {name}", { kind: td(d.variantKind) ?? t("Variante"), name: d.base.name })}</Pill>}
               </div>
               <div className="mt-6 flex flex-wrap gap-2">
-                <Link href={`/linhas/${d.slug}`} className="btn btn-primary"><GitBranch size={15} /> Linha evolutiva</Link>
-                <Link href={`/comparar?d=${d.slug}`} className="btn btn-ghost"><Scale size={15} /> Comparar</Link>
-                <Link href={`/universos/comparar?digimon=${d.slug}`} className="btn btn-ghost"><Tv size={15} /> Entre jogos</Link>
-                {editorEnabled() && <Link href={`/admin/digimon/${d.id}`} className="btn btn-ghost" title="Editar (somente no seu computador)"><Pencil size={15} /> Editar</Link>}
+                <Link href={`/linhas/${d.slug}`} className="btn btn-primary"><GitBranch size={15} /> {t("Linha evolutiva")}</Link>
+                <Link href={`/comparar?d=${d.slug}`} className="btn btn-ghost"><Scale size={15} /> {t("Comparar")}</Link>
+                <Link href={`/universos/comparar?digimon=${d.slug}`} className="btn btn-ghost"><Tv size={15} /> {t("Entre jogos")}</Link>
+                {editorEnabled() && <Link href={`/admin/digimon/${d.id}`} className="btn btn-ghost" title={t("Editar (somente no seu computador)")}><Pencil size={15} /> {t("Editar")}</Link>}
               </div>
             </div>
           </div>
@@ -140,8 +150,8 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
 
       <Container className="grid gap-10 py-10 lg:grid-cols-[200px_1fr]">
         <aside className="hidden lg:block">
-          <nav className="sticky top-24 space-y-1 text-sm" aria-label="Nesta página">
-            <div className="label mb-3">Nesta página</div>
+          <nav className="sticky top-24 space-y-1 text-sm" aria-label={t("Nesta página")}>
+            <div className="label mb-3">{t("Nesta página")}</div>
             {toc.map(([id, label]) => (
               <a key={id} href={`#${id}`} className="block border-l border-line py-1 pl-3 text-muted hover:border-primary hover:text-fg">{label}</a>
             ))}
@@ -149,33 +159,40 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
         </aside>
 
         <div className="min-w-0 space-y-12">
-          <Section id="visao-geral" title="Visão geral" icon={<Info size={18} />}>
+          <Section id="visao-geral" title={t("Visão geral")} icon={<Info size={18} />}>
             <div className="card p-5">
               <div className="prose-wiki">
-                {d.summary ? paragraphs(d.summary).map((p, i) => <p key={i}>{p}</p>) : !(d.profileJp || d.profileEn) && <Missing>Descrição ainda não cadastrada.</Missing>}
+                {summary ? paragraphs(summary).map((p, i) => <p key={i}>{p}</p>) : !profile && <Missing>{t("Descrição ainda não cadastrada.")}</Missing>}
               </div>
-              {(d.profileJp || d.profileEn) && (
-                <figure className={d.summary ? "mt-5 border-t border-line pt-5" : ""}>
-                  <figcaption className="label mb-3">Perfil</figcaption>
-                  {d.profileJp && <blockquote lang="ja" className="font-jp text-[15px] leading-8">{d.profileJp}</blockquote>}
-                  {d.profileEn && <blockquote lang="en" className={`text-[15px] leading-7 text-muted ${d.profileJp ? "mt-4" : ""}`}>{d.profileEn}</blockquote>}
+              {profile && (
+                <figure className={summary ? "mt-5 border-t border-line pt-5" : ""}>
+                  <figcaption className="label mb-3">
+                    {profile.lang === locale ? t("Perfil oficial") : profile.lang === "en" ? t("Perfil oficial (em inglês)") : t("Perfil oficial (em japonês)")}
+                  </figcaption>
+                  <blockquote lang={profile.lang} className={profile.lang === "ja" ? "font-jp text-[15px] leading-8" : "text-[15px] leading-7"}>{profile.text}</blockquote>
+                  {otherProfiles.map((p) => (
+                    <details key={p.lang} className="mt-4 text-sm">
+                      <summary className="cursor-pointer text-muted hover:text-fg">{p.lang === "ja" ? t("Ver o perfil original em japonês") : t("Ver o perfil em inglês")}</summary>
+                      <blockquote lang={p.lang} className={`mt-2 text-muted ${p.lang === "ja" ? "font-jp text-[15px] leading-8" : "text-[15px] leading-7"}`}>{p.text}</blockquote>
+                    </details>
+                  ))}
                 </figure>
               )}
               <dl className="mt-4">
-                <Field label="Nome oficial">{d.name}</Field>
-                <Field label="Nome japonês">{d.nameJp}</Field>
-                <Field label="Pronúncia">{d.pronunciation}</Field>
-                <Field label="Nº na wiki">{padNumber(d.number)}</Field>
-                <Field label="Significado do nome">{d.nameMeaning}</Field>
-                <Field label="Origem do design">{d.designOrigin}</Field>
-                <Field label="Primeira aparição">{d.firstAppearance && `${d.firstAppearance}${d.firstYear ? ` (${d.firstYear})` : ""}`}</Field>
+                <Field label={t("Nome oficial")}>{d.name}</Field>
+                <Field label={t("Nome japonês")}>{d.nameJp}</Field>
+                <Field label={t("Pronúncia")}>{d.pronunciation}</Field>
+                <Field label={t("Nº na wiki")}>{padNumber(d.number)}</Field>
+                <Field label={t("Significado do nome")}>{td(d.nameMeaning)}</Field>
+                <Field label={t("Origem do design")}>{td(d.designOrigin)}</Field>
+                <Field label={t("Primeira aparição")}>{d.firstAppearance && `${td(d.firstAppearance)}${d.firstYear ? ` (${d.firstYear})` : ""}`}</Field>
               </dl>
             </div>
           </Section>
 
-          <Section id="classificacao" title="Classificação" icon={<BookMarked size={18} />}>
+          <Section id="classificacao" title={t("Classificação")} icon={<BookMarked size={18} />}>
             <dl className="card px-5 py-2">
-              <Field label="Estágio">
+              <Field label={t("Estágio")}>
                 {d.stage && (
                   <span className="flex flex-wrap items-center gap-2">
                     <StageBadge stage={d.stage} />
@@ -183,9 +200,9 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                   </span>
                 )}
               </Field>
-              <Field label="Tipo">{d.types.length > 0 && d.types.map((t) => <Link key={t.typeId} className="mr-3 text-accent hover:underline" href={`/tipos/${t.type.slug}`}>{t.type.name}</Link>)}</Field>
-              <Field label="Atributo">{d.attribute && <AttributeBadge attribute={d.attribute} />}</Field>
-              <Field label="Família">
+              <Field label={t("Tipo")}>{d.types.length > 0 && d.types.map((ty) => <Link key={ty.typeId} className="mr-3 text-accent hover:underline" href={`/tipos/${ty.type.slug}`}>{ln(ty.type)}</Link>)}</Field>
+              <Field label={t("Atributo")}>{d.attribute && <AttributeBadge attribute={d.attribute} />}</Field>
+              <Field label={t("Família")}>
                 {d.families.length > 0 && (
                   <span className="flex flex-wrap gap-2">
                     {d.families.map((f) => (
@@ -196,52 +213,52 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                   </span>
                 )}
               </Field>
-              <Field label="Grupo / organização">
+              <Field label={t("Grupo / organização")}>
                 {d.groups.length > 0 && d.groups.map((g) => (
                   <span key={g.groupId} className="mr-3">
-                    <Link href={`/grupos/${g.group.slug}`} className="text-accent hover:underline">{g.group.name}</Link>
-                    {g.role && <span className="text-muted"> — {g.role}</span>}
+                    <Link href={`/grupos/${g.group.slug}`} className="text-accent hover:underline">{ln(g.group)}</Link>
+                    {g.role && <span className="text-muted"> — {td(g.role)}</span>}
                   </span>
                 ))}
               </Field>
-              <Field label="Nível de poder">{d.powerLevel}</Field>
+              <Field label={t("Nível de poder")}>{td(d.powerLevel)}</Field>
             </dl>
           </Section>
 
-          {hasChar && <Section id="caracteristicas" title="Características" icon={<Sparkles size={18} />}>
+          {hasChar && <Section id="caracteristicas" title={t("Características")} icon={<Sparkles size={18} />}>
             <dl className="card px-5 py-2">
-              <Field label="Descrição física">{d.physical}</Field>
-              <Field label="Personalidade">{d.personality}</Field>
-              <Field label="Combate">{d.combat}</Field>
+              <Field label={t("Descrição física")}>{td(d.physical)}</Field>
+              <Field label={t("Personalidade")}>{td(d.personality)}</Field>
+              <Field label={t("Combate")}>{td(d.combat)}</Field>
             </dl>
           </Section>}
 
-          {hasAttacks && <Section id="golpes" title="Golpes e habilidades" icon={<Swords size={18} />}>
+          {hasAttacks && <Section id="golpes" title={t("Golpes e habilidades")} icon={<Swords size={18} />}>
             <div className={d.attacks.length && d.abilities.length ? "grid gap-4 md:grid-cols-2" : "grid gap-4"}>
               {d.attacks.length > 0 && <div className="card p-5">
-                <h3 className="mb-3 font-semibold">Golpes e ataques</h3>
+                <h3 className="mb-3 font-semibold">{t("Golpes e ataques")}</h3>
                 {d.attacks.length ? (
                   <ul className="space-y-3">
                     {d.attacks.map((a) => (
                       <li key={a.id}>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-semibold">{a.name}</span>
-                          {a.localizedName && <span className="text-xs text-muted">Localizado: {a.localizedName}</span>}
+                          {a.localizedName && <span className="text-xs text-muted">{t("Localizado:")} {a.localizedName}</span>}
                         </div>
-                        {a.description && <p className="text-sm text-muted">{a.description}</p>}
+                        {a.description && <p className="text-sm text-muted">{td(a.description)}</p>}
                       </li>
                     ))}
                   </ul>
                 ) : null}
               </div>}
               {d.abilities.length > 0 && <div className="card p-5">
-                <h3 className="mb-3 font-semibold">Habilidades especiais</h3>
+                <h3 className="mb-3 font-semibold">{t("Habilidades especiais")}</h3>
                 {d.abilities.length ? (
                   <ul className="space-y-3">
                     {d.abilities.map((a) => (
                       <li key={a.id}>
-                        <span className="font-semibold">{a.name}</span>
-                        {a.description && <p className="text-sm text-muted">{a.description}</p>}
+                        <span className="font-semibold">{td(a.name)}</span>
+                        {a.description && <p className="text-sm text-muted">{td(a.description)}</p>}
                       </li>
                     ))}
                   </ul>
@@ -250,29 +267,29 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
             </div>
           </Section>}
 
-          <Section id="evolucoes" title="Evoluções" icon={<GitBranch size={18} />} action={<Link href={`/linhas/${d.slug}`} className="text-sm font-medium text-accent hover:underline">Árvore completa →</Link>}
+          <Section id="evolucoes" title={t("Evoluções")} icon={<GitBranch size={18} />} action={<Link href={`/linhas/${d.slug}`} className="text-sm font-medium text-accent hover:underline">{t("Árvore completa")} →</Link>}
 >
             <div className="grid gap-4 md:grid-cols-2">
-              <EvoColumn title="Evolui a partir de" icon={<ArrowLeft size={16} />} items={prev} self={d.name} direction="prev" />
-              <EvoColumn title="Pode evoluir para" icon={<ArrowRight size={16} />} items={next} self={d.name} direction="next" />
+              <EvoColumn title={t("Evolui a partir de")} icon={<ArrowLeft size={16} />} items={prev} self={d.name} direction="prev" />
+              <EvoColumn title={t("Pode evoluir para")} icon={<ArrowRight size={16} />} items={next} self={d.name} direction="next" />
             </div>
             {(d.variants.length > 0 || d.base) && (
               <div className="card mt-4 p-5">
-                <h3 className="mb-3 font-semibold">Formas alternativas e variantes</h3>
+                <h3 className="mb-3 font-semibold">{t("Formas alternativas e variantes")}</h3>
                 <div className="flex flex-wrap gap-2">
-                  {d.base && <DigimonChip d={d.base} suffix={<span className="text-xs text-muted">forma base</span>} />}
-                  {d.variants.map((v) => <DigimonChip key={v.id} d={v} suffix={v.variantKind && <span className="text-xs text-muted">{v.variantKind}</span>} />)}
+                  {d.base && <DigimonChip d={d.base} suffix={<span className="text-xs text-muted">{t("forma base")}</span>} />}
+                  {d.variants.map((v) => <DigimonChip key={v.id} d={v} suffix={v.variantKind && <span className="text-xs text-muted">{td(v.variantKind)}</span>} />)}
                 </div>
               </div>
             )}
           </Section>
 
-          {hasApp && <Section id="aparicoes" title="Aparições" icon={<Tv size={18} />}>
+          {hasApp && <Section id="aparicoes" title={t("Aparições")} icon={<Tv size={18} />}>
             <div className="grid gap-4 md:grid-cols-2">
               {appearancesByKind.filter(([, list]) => list.length > 0).map(([k, list]) => (
                 <div key={k} className="card p-5">
                   <h3 className="mb-3 flex items-center justify-between font-semibold">
-                    {MEDIA_KINDS[k].plural}
+                    {t(MEDIA_KINDS[k].plural)}
                     <span className="text-xs font-normal text-muted">{list.length}</span>
                   </h3>
                   {list.length ? (
@@ -280,39 +297,39 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                       {list.map((a) => (
                         <li key={a.id} className="text-sm">
                           <div className="flex flex-wrap items-center gap-2">
-                            <Link href={`/universos/${a.media.slug}`} className="font-semibold hover:text-primary">{a.media.name}</Link>
+                            <Link href={`/universos/${a.media.slug}`} className="font-semibold hover:text-primary">{ln(a.media)}</Link>
                             {a.media.year && <span className="text-xs text-muted">{a.media.year}</span>}
                           </div>
-                          {(a.role || a.form) && <div className="text-muted">{[a.role, a.form && `Forma: ${a.form}`].filter(Boolean).join(" · ")}</div>}
+                          {(a.role || a.form) && <div className="text-muted">{[td(a.role), a.form && t("Forma: {form}", { form: td(a.form) })].filter(Boolean).join(" · ")}</div>}
                         </li>
                       ))}
                     </ul>
-                  ) : <Missing>Nenhuma aparição cadastrada.</Missing>}
+                  ) : <Missing>{t("Nenhuma aparição cadastrada.")}</Missing>}
                 </div>
               ))}
             </div>
           </Section>}
 
-          {hasTrivia && <Section id="curiosidades" title="Curiosidades" icon={<Sparkles size={18} />}>
+          {hasTrivia && <Section id="curiosidades" title={t("Curiosidades")} icon={<Sparkles size={18} />}>
             {d.trivia.length ? (
               <ul className="space-y-2">
-                {d.trivia.map((t) => (
-                  <li key={t.id} className="card flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:justify-between">
-                    <p className="text-sm">{t.text}</p>
+                {d.trivia.map((tr) => (
+                  <li key={tr.id} className="card flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:justify-between">
+                    <p className="text-sm">{td(tr.text)}</p>
                   </li>
                 ))}
               </ul>
             ) : null}
           </Section>}
 
-          {hasRelated && <Section id="relacionados" title="Relacionados" icon={<Sparkles size={18} />}>
+          {hasRelated && <Section id="relacionados" title={t("Relacionados")} icon={<Sparkles size={18} />}>
             <div className="space-y-6">
               {related.length > 0 && <div>
-                <h3 className="mb-3 text-sm font-semibold text-muted">Digimon relacionados (mesmo grupo, tipo ou família)</h3>
+                <h3 className="mb-3 text-sm font-semibold text-muted">{t("Digimon relacionados (mesmo grupo, tipo ou família)")}</h3>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">{related.map((r) => <DigimonCard key={r.id} d={r} />)}</div>
               </div>}
               {similar.length > 0 && <div>
-                <h3 className="mb-3 text-sm font-semibold text-muted">Nomes semelhantes</h3>
+                <h3 className="mb-3 text-sm font-semibold text-muted">{t("Nomes semelhantes")}</h3>
                 <div className="flex flex-wrap gap-2">{similar.map((r) => <DigimonChip key={r.id} d={r} size="sm" />)}</div>
               </div>}
             </div>
@@ -324,16 +341,17 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
   );
 }
 
-function EvoColumn({ title, icon, items, self, direction }: {
+async function EvoColumn({ title, icon, items, self, direction }: {
   title: string; icon: React.ReactNode; self: string; direction: "prev" | "next";
-  items: { id: number; kind: string; status: string; notes: string | null; requirements: string | null; imported: boolean; target: Parameters<typeof DigimonChip>[0]["d"] & { id: number }; others: (Parameters<typeof DigimonChip>[0]["d"] & { id: number })[]; contexts: { media: { slug: string; name: string; kind: string }; requirements: string | null; status: string }[] }[];
+  items: { id: number; kind: string; status: string; notes: string | null; requirements: string | null; imported: boolean; target: Parameters<typeof DigimonChip>[0]["d"] & { id: number }; others: (Parameters<typeof DigimonChip>[0]["d"] & { id: number })[]; contexts: { media: { slug: string; name: string; nameJp: string | null; kind: string }; requirements: string | null; status: string }[] }[];
 }) {
+  const { t, td, ln } = await getI18n();
   const curated = items.filter((e) => !e.imported);
   const listed = items.filter((e) => e.imported);
   return (
     <div className="card flex flex-col p-5">
       <h3 className="mb-3 flex items-center gap-2 font-semibold"><span className="text-primary">{icon}</span>{title}</h3>
-      {items.length === 0 && <Missing>Nenhuma evolução cadastrada.</Missing>}
+      {items.length === 0 && <Missing>{t("Nenhuma evolução cadastrada.")}</Missing>}
       {listed.length > 0 && (
         <div className={curated.length ? "order-last mt-4 border-t border-line pt-4" : ""}>
           <ul className="flex flex-wrap gap-1.5">
@@ -341,7 +359,7 @@ function EvoColumn({ title, icon, items, self, direction }: {
               <li key={`${e.id}-${e.target.id}`} className="flex items-center gap-1.5">
                 <DigimonChip d={e.target} size="sm" />
                 {e.kind !== "normal" && <EvoKindBadge kind={e.kind} />}
-                {e.requirements && <span className="max-w-56 text-[11px] text-muted">{e.requirements}</span>}
+                {e.requirements && <span className="max-w-56 text-[11px] text-muted">{td(e.requirements)}</span>}
               </li>
             ))}
           </ul>
@@ -355,21 +373,21 @@ function EvoColumn({ title, icon, items, self, direction }: {
                 <DigimonChip d={e.target} size="sm" />
                 {e.others.length > 0 && (
                   <span className="text-xs text-muted">
-                    {direction === "next" ? `junto com ${e.others.map((o) => o.name).join(", ")}` : `+ ${e.others.map((o) => o.name).join(" + ")} → ${self}`}
+                    {direction === "next" ? t("junto com {names}", { names: e.others.map((o) => o.name).join(", ") }) : `+ ${e.others.map((o) => o.name).join(" + ")} → ${self}`}
                   </span>
                 )}
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {e.kind !== "normal" && <EvoKindBadge kind={e.kind} />}
               </div>
-              {e.requirements && <div className="mt-1.5 text-xs"><span className="text-muted">Requisito: </span>{e.requirements}</div>}
-              {e.notes && <div className="mt-1 text-xs text-muted">{e.notes}</div>}
+              {e.requirements && <div className="mt-1.5 text-xs"><span className="text-muted">{t("Requisito:")} </span>{td(e.requirements)}</div>}
+              {e.notes && <div className="mt-1 text-xs text-muted">{td(e.notes)}</div>}
               {e.contexts.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {e.contexts.map((c) => (
-                    <Link key={c.media.slug} href={`/universos/${c.media.slug}`} title={c.requirements ? `Requisitos: ${c.requirements}` : undefined}
+                    <Link key={c.media.slug} href={`/universos/${c.media.slug}`} title={c.requirements ? t("Requisitos: {req}", { req: td(c.requirements) }) : undefined}
                       className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted hover:text-fg">
-                      {c.media.name}{c.status === "unconfirmed" ? " (?)" : ""}
+                      {ln(c.media)}{c.status === "unconfirmed" ? " (?)" : ""}
                     </Link>
                   ))}
                 </div>

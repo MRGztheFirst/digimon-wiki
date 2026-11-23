@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { TaxonomyTermPage } from "@/components/taxonomy-pages";
 import { getTaxonomyTerm, TAXONOMIES } from "@/lib/taxonomy";
+import { getI18n } from "@/i18n/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const { t: tr } = await getI18n();
   const t = await getTaxonomyTerm("familias", slug);
-  return { title: t ? `${t.name} — ${TAXONOMIES.familias.singular}` : TAXONOMIES.familias.title };
+  return { title: t ? `${t.name} — ${tr(TAXONOMIES.familias.singular)}` : tr(TAXONOMIES.familias.title) };
 }
 
 export default async function Page({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ pagina?: string }> }) {

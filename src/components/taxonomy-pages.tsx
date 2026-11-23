@@ -9,6 +9,7 @@ import { paragraphs } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { StatusBadge } from "./badges";
 import { AttributeIcon, FamilyIcon } from "./icons";
+import { getI18n } from "@/i18n/server";
 
 function TermIcon({ kind, slug, name, color, size }: { kind: TaxonomyKind; slug: string; name: string; color?: string | null; size: number }) {
   if (kind === "atributos" && slug !== "no-data") return <AttributeIcon slug={slug} name={name} size={size} />;
@@ -17,6 +18,7 @@ function TermIcon({ kind, slug, name, color, size }: { kind: TaxonomyKind; slug:
 }
 
 export async function TaxonomyIndexPage({ kind }: { kind: TaxonomyKind }) {
+  const { t: tr } = await getI18n();
   const t = TAXONOMIES[kind];
   const items = await listTaxonomy(kind);
   const main = items.filter((i) => !i.special);
@@ -24,7 +26,7 @@ export async function TaxonomyIndexPage({ kind }: { kind: TaxonomyKind }) {
 
   return (
     <div>
-      <PageHeader crumbs={[[null, t.title]]} eyebrow="Classificação" title={t.title} subtitle={t.intro} />
+      <PageHeader crumbs={[[null, tr(t.title)]]} eyebrow={tr("Classificação")} title={tr(t.title)} subtitle={tr(t.intro)} />
       <Container className="space-y-10 py-10">
         {kind === "estagios" && (
           <div className="card scrollbar-thin overflow-x-auto p-5">
@@ -43,7 +45,7 @@ export async function TaxonomyIndexPage({ kind }: { kind: TaxonomyKind }) {
         )}
         <TermGrid items={main} kind={kind} />
         {special.length > 0 && (
-          <Section title="Estágios especiais" description="Fora da progressão padrão; dependem de mecânicas específicas (Digiovos, Espíritos...).">
+          <Section title={tr("Estágios especiais")} description={tr("Fora da progressão padrão; dependem de mecânicas específicas (Digiovos, Espíritos...).")}>
             <TermGrid items={special} kind={kind} />
           </Section>
         )}
@@ -76,6 +78,7 @@ function TermGrid({ items, kind }: { items: Awaited<ReturnType<typeof listTaxono
 }
 
 export async function TaxonomyTermPage({ kind, slug, page }: { kind: TaxonomyKind; slug: string; page: number }) {
+  const { t: tr } = await getI18n();
   const t = TAXONOMIES[kind];
   const term = await getTaxonomyTerm(kind, slug);
   if (!term) notFound();
@@ -88,7 +91,7 @@ export async function TaxonomyTermPage({ kind, slug, page }: { kind: TaxonomyKin
 
   return (
     <div>
-      <PageHeader crumbs={[[`/${kind}`, t.title], [null, term.name]]} eyebrow={t.singular} title={<span className="flex items-center gap-4"><TermIcon kind={kind} slug={term.slug} name={term.name} color={term.color} size={56} />{term.name}</span>} subtitle={term.subtitle} />
+      <PageHeader crumbs={[[`/${kind}`, tr(t.title)], [null, term.name]]} eyebrow={tr(t.singular)} title={<span className="flex items-center gap-4"><TermIcon kind={kind} slug={term.slug} name={term.name} color={term.color} size={56} />{term.name}</span>} subtitle={term.subtitle} />
       <Container className="grid gap-10 py-10 lg:grid-cols-[1fr_260px]">
         <div className="min-w-0 space-y-10">
           {(term.description || term.details) && (
@@ -97,14 +100,14 @@ export async function TaxonomyTermPage({ kind, slug, page }: { kind: TaxonomyKin
               {paragraphs(term.details).map((p, i) => <p key={i} className="text-muted">{p}</p>)}
             </div>
           )}
-          <Section title={`Digimon (${result.total})`} action={<Link href={`/digimon?${t.filterKey}=${slug}`} className="text-sm font-medium text-accent hover:underline">Refinar na busca avançada →</Link>}>
-            <DigimonGrid items={result.items} empty="Nenhum Digimon cadastrado nesta classificação ainda." />
+          <Section title={`Digimon (${result.total})`} action={<Link href={`/digimon?${t.filterKey}=${slug}`} className="text-sm font-medium text-accent hover:underline">{tr("Refinar na busca avançada")} →</Link>}>
+            <DigimonGrid items={result.items} empty={tr("Nenhum Digimon cadastrado nesta classificação ainda.")} />
             <Pagination page={result.page} total={result.total} pageSize={result.pageSize} makeHref={(p) => `/${kind}/${slug}?pagina=${p}`} />
           </Section>
         </div>
         <aside>
           <div className="card sticky top-20 p-4">
-            <div className="label mb-2">{t.title}</div>
+            <div className="label mb-2">{tr(t.title)}</div>
             <ul className="scrollbar-thin max-h-[70vh] space-y-0.5 overflow-auto">
               {siblings.map((s) => (
                 <li key={s.slug}>

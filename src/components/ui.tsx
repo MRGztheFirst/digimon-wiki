@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getI18n } from "@/i18n/server";
 
 export function Container({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("mx-auto max-w-7xl px-4 md:px-6", className)}>{children}</div>;
 }
 
-export function Breadcrumbs({ items }: { items: [href: string | null, label: string][] }) {
+export async function Breadcrumbs({ items }: { items: [href: string | null, label: string][] }) {
+  const { t } = await getI18n();
   return (
-    <nav aria-label="Trilha" className="mb-5 flex flex-wrap items-center gap-1.5 text-[13px] text-muted">
-      <Link href="/" className="hover:text-fg">Início</Link>
+    <nav aria-label={t("Trilha")} className="mb-5 flex flex-wrap items-center gap-1.5 text-[13px] text-muted">
+      <Link href="/" className="hover:text-fg">{t("Início")}</Link>
       {items.map(([href, label], i) => (
         <span key={i} className="flex items-center gap-1.5">
           <span aria-hidden="true">/</span>
@@ -56,10 +58,11 @@ export function Section({
   );
 }
 
-export function SeeAll({ href, children = "Ver todos" }: { href: string; children?: React.ReactNode }) {
+export async function SeeAll({ href, children }: { href: string; children?: React.ReactNode }) {
+  const { t } = await getI18n();
   return (
     <Link href={href} className="shrink-0 text-sm font-medium text-accent hover:underline">
-      {children} →
+      {children ?? t("Ver todos")} →
     </Link>
   );
 }
@@ -75,24 +78,26 @@ export function Field({ label, children, missing }: { label: string; children?: 
   );
 }
 
-export function Missing({ children = "Não documentado" }: { children?: React.ReactNode }) {
-  return <span className="text-sm text-muted/70">— {children}</span>;
+export async function Missing({ children }: { children?: React.ReactNode }) {
+  const { t } = await getI18n();
+  return <span className="text-sm text-muted/70">— {children ?? t("Não documentado")}</span>;
 }
 
-export function Pagination({ page, total, pageSize, makeHref }: { page: number; total: number; pageSize: number; makeHref: (p: number) => string }) {
+export async function Pagination({ page, total, pageSize, makeHref }: { page: number; total: number; pageSize: number; makeHref: (p: number) => string }) {
+  const { t } = await getI18n();
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
   const nums = Array.from(new Set([1, page - 1, page, page + 1, pages].filter((n) => n >= 1 && n <= pages))).sort((a, b) => a - b);
   return (
-    <nav className="mt-10 flex flex-wrap items-center justify-center gap-1 font-mono text-sm" aria-label="Paginação">
-      {page > 1 && <Link className="btn btn-ghost" href={makeHref(page - 1)}>← Anterior</Link>}
+    <nav className="mt-10 flex flex-wrap items-center justify-center gap-1 font-mono text-sm" aria-label={t("Paginação")}>
+      {page > 1 && <Link className="btn btn-ghost" href={makeHref(page - 1)}>← {t("Anterior")}</Link>}
       {nums.map((n, i) => (
         <span key={n} className="flex items-center gap-1">
           {i > 0 && nums[i - 1] !== n - 1 && <span className="px-1 text-muted">…</span>}
           <Link href={makeHref(n)} className={cn("btn min-w-10", n === page ? "btn-primary" : "btn-ghost")} aria-current={n === page ? "page" : undefined}>{n}</Link>
         </span>
       ))}
-      {page < pages && <Link className="btn btn-ghost" href={makeHref(page + 1)}>Próxima →</Link>}
+      {page < pages && <Link className="btn btn-ghost" href={makeHref(page + 1)}>{t("Próxima")} →</Link>}
     </nav>
   );
 }

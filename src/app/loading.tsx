@@ -1,10 +1,13 @@
-export default function Loading() {
+import { getI18n } from "@/i18n/server";
+
+export default async function Loading() {
+  const { t } = await getI18n();
   return (
     <div aria-busy="true" aria-live="polite">
       <div className="fixed inset-x-0 top-14 z-50 h-[3px] overflow-hidden bg-bar/40">
         <div className="loading-bar h-full w-1/3 bg-primary" />
       </div>
-      <span className="sr-only">Carregando…</span>
+      <span className="sr-only">{t("Carregando…")}</span>
       <div className="border-b border-line">
         <div className="mx-auto max-w-7xl px-4 pb-10 pt-10 md:px-6">
           <div className="h-3 w-40 animate-pulse rounded-[2px] bg-surface-2" />

@@ -8,10 +8,15 @@ import { DigimonChip, EmptyState } from "@/components/digimon-card";
 import { EvoKindBadge, StatusBadge } from "@/components/badges";
 import { MEDIA_KINDS, mediaKindOf } from "@/lib/constants";
 import { yearRange } from "@/lib/utils";
+import { getI18n } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Curiosidades" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: t("Curiosidades") };
+}
 
 export default async function Curiosities() {
+  const { t, td, ln } = await getI18n();
   const [trivia, fusions, specials, variants, groups, media, firsts] = await Promise.all([
     db.trivia.findMany({ include: { digimon: { select: cardSelect } }, orderBy: { digimon: { number: "asc" } } }),
     db.evolution.findMany({ where: { kind: { in: ["dna", "biomerge"] }, imported: false }, include: { from: { select: cardSelect }, to: { select: cardSelect }, partners: { include: { digimon: { select: cardSelect } } } } }),
@@ -27,43 +32,43 @@ export default async function Curiosities() {
 
   return (
     <div>
-      <PageHeader crumbs={[[null, "Curiosidades"]]} eyebrow="Descubra" title="Curiosidades e informações adicionais"
-        subtitle="Fusões, variantes, grupos lendários e a cronologia das obras." />
+      <PageHeader crumbs={[[null, t("Curiosidades")]]} eyebrow={t("Descubra")} title={t("Curiosidades e informações adicionais")}
+        subtitle={t("Fusões, variantes, grupos lendários e a cronologia das obras.")} />
       <Container className="space-y-14 py-10">
-        <Section title="Curiosidades" icon={<Lightbulb size={20} />}>
+        <Section title={t("Curiosidades")} icon={<Lightbulb size={20} />}>
           {trivia.length ? (
             <div className="grid gap-3 md:grid-cols-2">
-              {trivia.map((t) => (
-                <div key={t.id} className="card flex flex-col gap-3 p-4">
-                  <p className="text-sm">{t.text}</p>
+              {trivia.map((tr) => (
+                <div key={tr.id} className="card flex flex-col gap-3 p-4">
+                  <p className="text-sm">{td(tr.text)}</p>
                   <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
-                    <DigimonChip d={t.digimon} size="sm" />
-                    <StatusBadge status={t.status} />
+                    <DigimonChip d={tr.digimon} size="sm" />
+                    <StatusBadge status={tr.status} />
                   </div>
                 </div>
               ))}
             </div>
-          ) : <EmptyState>Nenhuma curiosidade cadastrada.</EmptyState>}
+          ) : <EmptyState>{t("Nenhuma curiosidade cadastrada.")}</EmptyState>}
         </Section>
 
-        <Section title="Digimon lendários e grupos" icon={<Crown size={20} />}>
+        <Section title={t("Digimon lendários e grupos")} icon={<Crown size={20} />}>
           <div className="grid gap-3 md:grid-cols-2">
             {[...legendary, ...others].map((g) => (
               <div key={g.id} className="card p-4">
                 <Link href={`/grupos/${g.slug}`} className="flex items-center gap-2 font-display text-lg font-semibold hover:text-primary">
-                  {g.legendary ? <Crown size={16} className="text-yellow-400" /> : <Users size={16} className="text-muted" />}{g.name}
+                  {g.legendary ? <Crown size={16} className="text-yellow-400" /> : <Users size={16} className="text-muted" />}{ln(g)}
                 </Link>
-                {g.nameJp && <div className="text-xs text-muted">{g.nameJp}</div>}
-                {g.description && <p className="mt-1 text-sm text-muted">{g.description}</p>}
+                {g.nameJp && ln(g) !== g.nameJp && <div className="text-xs text-muted">{g.nameJp}</div>}
+                {g.description && <p className="mt-1 text-sm text-muted">{td(g.description)}</p>}
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {g.members.map((m) => <DigimonChip key={m.digimonId} d={m.digimon} size="sm" suffix={m.role && <span className="text-[11px] text-muted">{m.role}</span>} />)}
+                  {g.members.map((m) => <DigimonChip key={m.digimonId} d={m.digimon} size="sm" suffix={m.role && <span className="text-[11px] text-muted">{td(m.role)}</span>} />)}
                 </div>
               </div>
             ))}
           </div>
         </Section>
 
-        <Section title="Fusões (DNA e Biomerge)" icon={<Dna size={20} />}>
+        <Section title={t("Fusões (DNA e Biomerge)")} icon={<Dna size={20} />}>
           <div className="card divide-y divide-line">
             {fusions.map((e) => (
               <div key={e.id} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
@@ -81,31 +86,31 @@ export default async function Curiosities() {
         </Section>
 
         <div className="grid gap-14 lg:grid-cols-2">
-          <Section title="Evoluções especiais" icon={<Layers size={20} />}>
+          <Section title={t("Evoluções especiais")} icon={<Layers size={20} />}>
             <div className="card divide-y divide-line">
               {specials.map((e) => (
                 <Link key={e.id} href={`/linhas/${e.to.slug}`} className="flex items-center justify-between gap-2 p-3 text-sm hover:bg-surface-2">
-                  <span>{e.from.name} <span className="text-muted">→</span> <b>{e.to.name}</b>{e.requirements && <span className="text-muted"> · {e.requirements}</span>}</span>
+                  <span>{e.from.name} <span className="text-muted">→</span> <b>{e.to.name}</b>{e.requirements && <span className="text-muted"> · {td(e.requirements)}</span>}</span>
                   <EvoKindBadge kind={e.kind} />
                 </Link>
               ))}
             </div>
           </Section>
-          <Section title="Variantes e formas alternativas" icon={<Shapes size={20} />}>
+          <Section title={t("Variantes e formas alternativas")} icon={<Shapes size={20} />}>
             <div className="card divide-y divide-line">
               {variants.map((v) => (
                 <div key={v.id} className="flex flex-wrap items-center gap-2 p-3 text-sm">
                   {v.base && <DigimonChip d={v.base} size="sm" />}
                   <span className="text-muted">→</span>
                   <DigimonChip d={v} size="sm" />
-                  <span className="ml-auto text-xs text-muted">{v.variantKind}</span>
+                  <span className="ml-auto text-xs text-muted">{td(v.variantKind)}</span>
                 </div>
               ))}
             </div>
           </Section>
         </div>
 
-        <Section title="Cronologia de aparições" icon={<CalendarClock size={20} />} description="Obras cadastradas por ano de lançamento e primeiras aparições documentadas.">
+        <Section title={t("Cronologia de aparições")} icon={<CalendarClock size={20} />} description={t("Obras cadastradas por ano de lançamento e primeiras aparições documentadas.")}>
           <ol className="relative space-y-6 border-l-2 border-line pl-6">
             {years.map((y) => {
               const ms = media.filter((m) => m.year === y);
@@ -117,13 +122,13 @@ export default async function Curiosities() {
                   <div className="mt-2 flex flex-wrap gap-2">
                     {ms.map((m) => (
                       <Link key={m.id} href={`/universos/${m.slug}`} className="card px-3 py-1.5 text-sm hover:border-fg/40" style={{ borderLeft: `3px solid ${m.color}` }}>
-                        <b>{m.name}</b> <span className="text-xs text-muted">{MEDIA_KINDS[mediaKindOf(m.kind)].label} · {yearRange(m.year, m.endYear)} · {m._count.appearances} Digimon</span>
+                        <b>{ln(m)}</b> <span className="text-xs text-muted">{t(MEDIA_KINDS[mediaKindOf(m.kind)].label)} · {yearRange(m.year, m.endYear)} · {m._count.appearances} Digimon</span>
                       </Link>
                     ))}
                   </div>
                   {debut.length > 0 && (
                     <div className="mt-2 text-xs text-muted">
-                      Estreias documentadas: {debut.slice(0, 24).map((f, i) => <span key={f.id}>{i > 0 && ", "}<Link href={`/digimon/${f.slug}`} className="text-accent hover:underline">{f.name}</Link></span>)}{debut.length > 24 && ` e mais ${debut.length - 24}`}
+                      {t("Estreias documentadas:")} {debut.slice(0, 24).map((f, i) => <span key={f.id}>{i > 0 && ", "}<Link href={`/digimon/${f.slug}`} className="text-accent hover:underline">{f.name}</Link></span>)}{debut.length > 24 && t(" e mais {n}", { n: debut.length - 24 })}
                     </div>
                   )}
                 </li>

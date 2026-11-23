@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "./db";
 import type { GraphData, GEdge, GNode } from "./graph-types";
+import { getI18n } from "@/i18n/server";
 
 const nodeSelect = {
   id: true,
@@ -8,7 +9,7 @@ const nodeSelect = {
   name: true,
   nameJp: true,
   imageUrl: true,
-  stage: { select: { name: true, nameEn: true, order: true, color: true, isSpecial: true } },
+  stage: { select: { name: true, nameEn: true, nameJp: true, order: true, color: true, isSpecial: true } },
   attribute: { select: { name: true, color: true, slug: true } },
 } as const;
 
@@ -17,7 +18,7 @@ const edgeInclude = {
   source: { select: { title: true, url: true } },
   contexts: {
     include: {
-      media: { select: { id: true, slug: true, name: true, kind: true } },
+      media: { select: { id: true, slug: true, name: true, nameJp: true, kind: true } },
       source: { select: { title: true, url: true } },
     },
   },
@@ -29,7 +30,9 @@ function fetchEdges(where: object) {
   return db.evolution.findMany({ where, include: edgeInclude });
 }
 
-function toEdge(e: RawEdge): GEdge {
+type I18n = Awaited<ReturnType<typeof getI18n>>;
+
+function toEdge(e: RawEdge, { td, ln }: I18n): GEdge {
   return {
     id: e.id,
     from: e.fromId,
@@ -37,16 +40,16 @@ function toEdge(e: RawEdge): GEdge {
     kind: e.kind,
     status: e.status,
     partners: e.partners.map((p) => p.digimonId),
-    requirements: e.requirements,
-    notes: e.notes,
+    requirements: td(e.requirements),
+    notes: td(e.notes),
     source: e.source,
     contexts: e.contexts.map((c) => ({
       mediaId: c.media.id,
       mediaSlug: c.media.slug,
-      mediaName: c.media.name,
+      mediaName: ln(c.media),
       mediaKind: c.media.kind,
-      requirements: c.requirements,
-      notes: c.notes,
+      requirements: td(c.requirements),
+      notes: td(c.notes),
       status: c.status,
       source: c.source,
     })),
@@ -56,6 +59,8 @@ function toEdge(e: RawEdge): GEdge {
 const IMPORTED_NODE_BUDGET = 40;
 
 export async function buildEvolutionGraph(rootId: number, maxDepth = 12): Promise<GraphData> {
+  const i18n = await getI18n();
+  const { locale, t, ln } = i18n;
   const edges = new Map<number, GEdge>();
   const nodeIds = new Set<number>([rootId]);
 
@@ -74,7 +79,7 @@ export async function buildEvolutionGraph(rootId: number, maxDepth = 12): Promis
       }
       const next: number[] = [];
       for (const r of rows) {
-        edges.set(r.id, toEdge(r));
+        edges.set(r.id, toEdge(r, i18n));
         nodeIds.add(r.fromId);
         nodeIds.add(r.toId);
         r.partners.forEach((p) => nodeIds.add(p.digimonId));
@@ -102,12 +107,12 @@ export async function buildEvolutionGraph(rootId: number, maxDepth = 12): Promis
     name: d.name,
     nameJp: d.nameJp,
     imageUrl: d.imageUrl,
-    stageName: d.stage?.name ?? "Sem estágio",
-    stageNameEn: d.stage?.nameEn ?? null,
+    stageName: d.stage ? ln(d.stage) : t("Sem estágio"),
+    stageNameEn: locale === "en" ? null : d.stage?.nameEn ?? null,
     stageOrder: d.stage?.order ?? 999,
     stageColor: d.stage?.color ?? "#64748b",
     stageSpecial: d.stage?.isSpecial ?? false,
-    attrName: d.attribute?.name?.split(" (")[0] ?? null,
+    attrName: d.attribute ? t(d.attribute.name).split(" (")[0] : null,
     attrSlug: d.attribute?.slug ?? null,
     attrColor: d.attribute?.color ?? null,
   }));

@@ -13,12 +13,18 @@ import "@fontsource/noto-sans-jp/500.css";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { I18nProvider } from "@/i18n/client";
+import { LOCALE_INFO } from "@/i18n/config";
+import { uiMessages } from "@/i18n/messages";
+import { getI18n } from "@/i18n/server";
 
-export const metadata: Metadata = {
-  title: { default: "Digimon Database — Enciclopédia de Digimon", template: "%s · Digimon Database" },
-  description:
-    "Enciclopédia de Digimon com linhas evolutivas interativas, diferenças entre jogos e mídias, pesquisa avançada e comparador.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: { default: t("Digimon Database — Enciclopédia de Digimon"), template: "%s · Digimon Database" },
+    description: t("Enciclopédia de Digimon com linhas evolutivas interativas, diferenças entre jogos e mídias, pesquisa avançada e comparador."),
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -29,16 +35,19 @@ export const viewport: Viewport = {
 
 const themeScript = `try{if(localStorage.getItem('theme')==='light'){document.documentElement.classList.remove('dark')}}catch(e){}`;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { locale } = await getI18n();
   return (
-    <html lang="pt-BR" className="dark" suppressHydrationWarning>
+    <html lang={LOCALE_INFO[locale].htmlLang} className="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-screen flex-col font-sans">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <I18nProvider locale={locale} messages={uiMessages[locale]}>
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </I18nProvider>
       </body>
     </html>
   );
