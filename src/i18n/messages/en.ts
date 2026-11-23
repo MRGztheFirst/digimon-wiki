@@ -356,6 +356,20 @@ const en: Record<string, string> = {
   "{n} sistemas": "{n} systems",
   "{n} tipos": "{n} types",
   "“Específica da mídia” é sempre acompanhada da obra (jogo, anime, filme, mangá, V-Pet ou card game) em que vale. Regras de um jogo nunca são apresentadas como universais.": "“Media-specific” always comes with the title (game, anime, movie, manga, V-Pet or card game) where it applies. A game's rules are never presented as universal.",
+  "Sem obra definida": "No known title",
+  "Ligações importadas sem a obra de origem. Ficam ocultas por padrão.": "Imported links with no source title. Hidden by default.",
+  "Ver a árvore de": "Show the tree for",
+  "Buscar obra": "Search titles",
+  "Buscar obra...": "Search titles...",
+  "Nenhuma obra encontrada.": "No titles found.",
+  "Só as evoluções que existem em {name}.": "Only evolutions that exist in {name}.",
+  "Ver todas as obras": "Show all titles",
+  "Esta visão junta todas as obras: jogos, V-Pets, card games e anime. Nenhum jogo tem todas essas evoluções. Escolha uma obra acima para ver a árvore dela.": "This view combines every title: games, V-Pets, card games and anime. No single game has all of these evolutions. Pick a title above to see its own tree.",
+  "Importada sem a obra de origem. Não dá para saber em qual jogo ou anime ela acontece.": "Imported without its source title. There's no way to tell which game or anime it happens in.",
+  "Onde essa evolução aparece ({n})": "Where this evolution appears ({n})",
+  "Outras obras citadas no Wikimon ({n})": "Other titles cited on Wikimon ({n})",
+  "Mostrando {shown} de {n}. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.": "Showing {shown} of {n}. To see the rest, open a Digimon's evolution line and pick this title.",
+  "+{n} outras": "+{n} more",
 };
 
 export default en;

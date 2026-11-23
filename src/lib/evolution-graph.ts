@@ -39,6 +39,7 @@ function toEdge(e: RawEdge, { td, ln }: I18n): GEdge {
     to: e.toId,
     kind: e.kind,
     status: e.status,
+    imported: e.imported,
     partners: e.partners.map((p) => p.digimonId),
     requirements: td(e.requirements),
     notes: td(e.notes),
@@ -58,20 +59,21 @@ function toEdge(e: RawEdge, { td, ln }: I18n): GEdge {
 
 const IMPORTED_NODE_BUDGET = 40;
 
-export async function buildEvolutionGraph(rootId: number, maxDepth = 12): Promise<GraphData> {
+export async function buildEvolutionGraph(rootId: number, { mediaId = null, maxDepth = 12 }: { mediaId?: number | null; maxDepth?: number } = {}): Promise<GraphData> {
   const i18n = await getI18n();
   const { locale, t, ln } = i18n;
   const edges = new Map<number, GEdge>();
   const nodeIds = new Set<number>([rootId]);
 
-  async function walk(direction: "up" | "down", imported: boolean, depthLimit: number) {
+  async function walk(direction: "up" | "down", imported: boolean | null, depthLimit: number) {
     let frontier = [rootId];
     const seen = new Set<number>(frontier);
     for (let depth = 0; depth < depthLimit && frontier.length; depth++) {
+      const scope = imported === null ? { contexts: { some: { mediaId: mediaId! } } } : { imported };
       const where =
         direction === "up"
-          ? { imported, toId: { in: frontier } }
-          : { imported, OR: [{ fromId: { in: frontier } }, { partners: { some: { digimonId: { in: frontier } } } }] };
+          ? { ...scope, toId: { in: frontier } }
+          : { ...scope, OR: [{ fromId: { in: frontier } }, { partners: { some: { digimonId: { in: frontier } } } }] };
       const rows = await fetchEdges(where);
       if (imported && depth > 0) {
         const fresh = new Set(rows.flatMap((r) => [r.fromId, r.toId]).filter((id) => !nodeIds.has(id)));
@@ -95,10 +97,15 @@ export async function buildEvolutionGraph(rootId: number, maxDepth = 12): Promis
     }
   }
 
-  await walk("up", false, maxDepth);
-  await walk("down", false, maxDepth);
-  await walk("up", true, 2);
-  await walk("down", true, 2);
+  if (mediaId != null) {
+    await walk("up", null, maxDepth);
+    await walk("down", null, maxDepth);
+  } else {
+    await walk("up", false, maxDepth);
+    await walk("down", false, maxDepth);
+    await walk("up", true, 2);
+    await walk("down", true, 2);
+  }
 
   const rows = await db.digimon.findMany({ where: { id: { in: [...nodeIds] } }, select: nodeSelect });
   const nodes: GNode[] = rows.map((d) => ({

@@ -33,6 +33,7 @@ export type GEdge = {
   to: number;
   kind: string;
   status: string;
+  imported: boolean;
   partners: number[];
   requirements: string | null;
   notes: string | null;

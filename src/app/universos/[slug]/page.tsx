@@ -25,6 +25,9 @@ const FEATURE_ICONS: Record<FeatureCategory, React.ReactNode> = {
   particularity: <Sparkles size={18} />,
 };
 
+const EVO_LIMIT = 300;
+const EXCLUSIVE_LIMIT = 150;
+
 export default async function MediaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { locale, t, td, ln } = await getI18n();
@@ -53,6 +56,8 @@ export default async function MediaPage({ params }: { params: Promise<{ slug: st
   const exclusiveDigimon = m.appearances.filter((a) => a.digimon._count.appearances === 1);
   const evo = [...m.evolutionContexts].sort((a, b) => a.evolution.from.number - b.evolution.from.number);
   const exclusiveEvo = evo.filter((c) => c.evolution._count.contexts === 1);
+  const shownEvo = evo.slice(0, EVO_LIMIT);
+  const shownExclusive = exclusiveEvo.slice(0, EXCLUSIVE_LIMIT);
   const categories = Object.keys(FEATURE_CATEGORIES) as FeatureCategory[];
 
   return (
@@ -114,7 +119,7 @@ export default async function MediaPage({ params }: { params: Promise<{ slug: st
                   <tr><th className="p-3">{t("Evolução")}</th><th className="p-3">{t("Tipo")}</th><th className="p-3">{t("Requisitos / observações")}</th><th className="p-3">{t("Status")}</th></tr>
                 </thead>
                 <tbody className="divide-y divide-line">
-                  {evo.map((c) => (
+                  {shownEvo.map((c) => (
                     <tr key={c.id} className="hover:bg-surface-2/60">
                       <td className="p-3">
                         <Link href={`/linhas/${c.evolution.from.slug}?midia=${m.slug}`} className="hover:text-primary">
@@ -131,6 +136,9 @@ export default async function MediaPage({ params }: { params: Promise<{ slug: st
                   ))}
                 </tbody>
               </table>
+              {evo.length > shownEvo.length && (
+                <p className="border-t border-line p-3 text-xs text-muted">{t("Mostrando {shown} de {n}. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.", { shown: shownEvo.length, n: evo.length })}</p>
+              )}
             </div>
           ) : <EmptyState>{t("Nenhuma evolução cadastrada para esta obra ainda.")}</EmptyState>}
         </Section>
@@ -138,11 +146,12 @@ export default async function MediaPage({ params }: { params: Promise<{ slug: st
         <Section title={t("Diferenças nas linhas evolutivas")} icon={<Cog size={20} />} description={t("Evoluções que, nesta wiki, estão registradas apenas neste universo.")}>
           {exclusiveEvo.length ? (
             <div className="flex flex-wrap gap-2">
-              {exclusiveEvo.map((c) => (
-                <Link key={c.id} href={`/linhas/${c.evolution.from.slug}`} className="card px-3 py-2 text-sm hover:border-fg/40">
+              {shownExclusive.map((c) => (
+                <Link key={c.id} href={`/linhas/${c.evolution.from.slug}?midia=${m.slug}`} className="card px-3 py-2 text-sm hover:border-fg/40">
                   {c.evolution.from.name} → <b>{c.evolution.to.name}</b>
                 </Link>
               ))}
+              {exclusiveEvo.length > shownExclusive.length && <span className="self-center text-xs text-muted">{t("+{n} outras", { n: exclusiveEvo.length - shownExclusive.length })}</span>}
             </div>
           ) : <Missing>{t("Nenhuma evolução exclusiva registrada.")}</Missing>}
         </Section>

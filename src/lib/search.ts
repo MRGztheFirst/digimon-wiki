@@ -40,7 +40,11 @@ export function buildWhere(f: SearchFilters): Prisma.DigimonWhereInput {
   if (f.tipo) and.push({ types: { some: { type: { slug: f.tipo } } } });
   if (f.familia) and.push({ families: { some: { family: { slug: f.familia } } } });
   if (f.grupo) and.push({ groups: { some: { group: { slug: f.grupo } } } });
-  for (const m of [f.jogo, f.anime, f.midia]) if (m) and.push({ appearances: { some: { media: { slug: m } } } });
+  for (const m of [f.jogo, f.anime, f.midia]) {
+    if (!m) continue;
+    const inMedia = { contexts: { some: { media: { slug: m } } } };
+    and.push({ OR: [{ appearances: { some: { media: { slug: m } } } }, { evolutionsFrom: { some: inMedia } }, { evolutionsTo: { some: inMedia } }] });
+  }
   if (f.habilidade) {
     and.push({
       OR: [

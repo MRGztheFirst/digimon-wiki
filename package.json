@@ -15,7 +15,8 @@
     "db:images": "tsx prisma/import-images.ts",
     "preview": "next build && next start -p 3001",
     "db:fetch": "tsx prisma/fetch-digiapi.ts",
-    "db:import": "tsx prisma/fetch-digiapi.ts && tsx prisma/import-digiapi.ts"
+    "db:import": "tsx prisma/fetch-digiapi.ts && tsx prisma/import-digiapi.ts && npm run db:wikimon",
+    "db:wikimon": "tsx prisma/fetch-wikimon.ts && tsx prisma/import-wikimon.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

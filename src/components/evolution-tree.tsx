@@ -1,22 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ExternalLink, Focus, List, Maximize2, Minus, Network, Plus, RotateCcw, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { ExternalLink, Focus, Info, List, Maximize2, Minus, Network, Plus, RotateCcw, X } from "lucide-react";
 import type { GEdge, GraphData, GraphFilters, GNode } from "@/lib/graph-types";
 import { COL_GAP, NODE_H, NODE_W, filterGraph, layoutGraph } from "@/lib/graph-layout";
-import { EVOLUTION_KINDS, MEDIA_KINDS, STATUSES, evoKindOf, mediaKindOf, statusOf } from "@/lib/constants";
+import { EVOLUTION_KINDS, MEDIA_KINDS, MEDIA_KIND_KEYS, evoKindOf, mediaKindOf } from "@/lib/constants";
 import { DigimonAvatar } from "./digimon-avatar";
+import { MediaPicker, type MediaChoice } from "./media-picker";
 import { AttributeIcon } from "./icons";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/client";
 
-type MediaOpt = { id: number; name: string; kind: string };
+type Current = { slug: string; name: string; kind: string } | null;
 
 const MEDIA_FILTERS: [string, string][] = [
   ["general", "Geral"],
   ...(["anime", "movie", "game", "vpet", "manga", "card", "other"] as const).map((k) => [k, MEDIA_KINDS[k].plural] as [string, string]),
+  ["unknown", "Sem obra definida"],
 ];
+const DEFAULT_MEDIA = () => new Set(MEDIA_FILTERS.map(([k]) => k).filter((k) => k !== "unknown"));
 
 function lineStyle(status: string) {
   if (status === "unconfirmed") return "6 5";
@@ -24,32 +28,30 @@ function lineStyle(status: string) {
   return undefined;
 }
 
-export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { graph: GraphData; mediaOptions: MediaOpt[]; initialMediaId?: number | null }) {
+export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphData; slug: string; choices: MediaChoice[]; current: Current }) {
   const { t } = useI18n();
+  const router = useRouter();
+  const [navigating, startNav] = useTransition();
   const presentKinds = useMemo(() => [...new Set(graph.edges.map((e) => e.kind))], [graph]);
   const presentMediaKinds = useMemo(() => {
     const s = new Set<string>();
-    graph.edges.forEach((e) => (e.contexts.length ? e.contexts.forEach((c) => s.add(c.mediaKind)) : s.add("general")));
-    if (graph.edges.some((e) => e.status === "official")) s.add("general");
+    graph.edges.forEach((e) => (e.contexts.length ? e.contexts.forEach((c) => s.add(c.mediaKind)) : s.add(e.imported ? "unknown" : "general")));
+    if (graph.edges.some((e) => e.status === "official" && !e.imported)) s.add("general");
     return s;
   }, [graph]);
-  const graphMedia = useMemo(() => {
-    const ids = new Set(graph.edges.flatMap((e) => e.contexts.map((c) => c.mediaId)));
-    return mediaOptions.filter((m) => ids.has(m.id));
-  }, [graph, mediaOptions]);
+  const unknownCount = useMemo(() => graph.edges.filter((e) => e.imported && !e.contexts.length).length, [graph]);
 
-  const [mediaKinds, setMediaKinds] = useState<Set<string>>(() => new Set(MEDIA_FILTERS.map(([k]) => k)));
+  const [mediaKinds, setMediaKinds] = useState<Set<string>>(DEFAULT_MEDIA);
   const [statuses, setStatuses] = useState<Set<string>>(() => new Set(["official", "media", "unconfirmed"]));
   const [kinds, setKinds] = useState<Set<string>>(() => new Set(Object.keys(EVOLUTION_KINDS)));
-  const [mediaId, setMediaId] = useState<number | null>(initialMediaId);
   const [selected, setSelected] = useState<{ type: "node" | "edge"; id: number } | null>({ type: "node", id: graph.rootId });
   const [hover, setHover] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [view, setView] = useState<"tree" | "list">("tree");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const filters: GraphFilters = { mediaKinds, statuses, kinds, mediaId };
-  const { nodes, edges } = useMemo(() => filterGraph(graph, filters), [graph, mediaKinds, statuses, kinds, mediaId]);
+  const filters: GraphFilters = { mediaKinds, statuses, kinds, mediaId: null };
+  const { nodes, edges } = useMemo(() => filterGraph(graph, filters), [graph, mediaKinds, statuses, kinds]);
   const layout = useMemo(() => layoutGraph(nodes, edges), [nodes, edges]);
   const pos = useMemo(() => new Map(layout.placed.map((p) => [p.id, p])), [layout]);
   const byId = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph]);
@@ -103,11 +105,11 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
     setter(next);
   };
   const reset = () => {
-    setMediaKinds(new Set(MEDIA_FILTERS.map(([k]) => k)));
+    setMediaKinds(DEFAULT_MEDIA());
     setStatuses(new Set(["official", "media", "unconfirmed"]));
     setKinds(new Set(Object.keys(EVOLUTION_KINDS)));
-    setMediaId(null);
   };
+  const go = (media: string | null) => startNav(() => router.push(media ? `/linhas/${slug}?midia=${media}` : `/linhas/${slug}`, { scroll: false }));
 
   const selNode = selected?.type === "node" ? byId.get(selected.id) : undefined;
   const selEdge = selected?.type === "edge" ? graph.edges.find((e) => e.id === selected.id) : undefined;
@@ -116,27 +118,22 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
       <div className="min-w-0 space-y-3">
-        <div className="card space-y-3 p-4">
-          <FilterRow label={t("Mídia")}>
-            {MEDIA_FILTERS.filter(([k]) => presentMediaKinds.has(k)).map(([k, label]) => (
-              <Chip key={k} active={mediaKinds.has(k) && mediaId == null} disabled={mediaId != null} onClick={() => toggle(mediaKinds, setMediaKinds, k)}>
-                {t(label)}
-              </Chip>
-            ))}
-            <select
-              className="input h-8 w-auto max-w-full py-0 text-xs"
-              value={mediaId ?? ""}
-              onChange={(e) => setMediaId(e.target.value ? Number(e.target.value) : null)}
-              aria-label={t("Somente uma obra específica")}
-            >
-              <option value="">{t("Todas as obras")}</option>
-              {graphMedia.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {t("Somente: {name}", { name: m.name })}
-                </option>
+        <div className={cn("card space-y-3 p-4", navigating && "opacity-70")}>
+          {choices.length > 0 && (
+            <FilterRow label={t("Ver a árvore de")}>
+              <MediaPicker choices={choices} current={current?.slug ?? null} onPick={go} />
+            </FilterRow>
+          )}
+          {!current && (
+            <FilterRow label={t("Mídia")}>
+              {MEDIA_FILTERS.filter(([k]) => presentMediaKinds.has(k)).map(([k, label]) => (
+                <Chip key={k} active={mediaKinds.has(k)} onClick={() => toggle(mediaKinds, setMediaKinds, k)} title={k === "unknown" ? t("Ligações importadas sem a obra de origem. Ficam ocultas por padrão.") : undefined}>
+                  {t(label)}
+                  {k === "unknown" && <span className="font-mono text-[10px] opacity-70">{unknownCount}</span>}
+                </Chip>
               ))}
-            </select>
-          </FilterRow>
+            </FilterRow>
+          )}
           <FilterRow label={t("Tipo de evolução")}>
             {presentKinds.map((k) => {
               const info = EVOLUTION_KINDS[evoKindOf(k)];
@@ -183,6 +180,7 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
             <RotateCcw size={14} /> {t("Limpar filtros")}
           </button>
         </div>
+        <ScopeNote current={current} onAll={() => go(null)} />
         <p className="text-xs text-muted">
           {t("{n} Digimon · {e} conexões", { n: nodes.length, e: edges.length })}
           {hiddenCount > 0 && t(" · {n} ocultos pelos filtros", { n: hiddenCount })}. {t("Clique em um Digimon ou em uma seta para ver detalhes.")}
@@ -221,7 +219,7 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
                       return (
                         <g key={`${e.id}-${i}`} className="cursor-pointer" onClick={() => setSelected({ type: "edge", id: e.id })} style={{ opacity: dim ? 0.15 : 1, transition: "opacity .2s" }}>
                           <path d={d} fill="none" stroke="transparent" strokeWidth={14} />
-                          <path d={d} fill="none" stroke={info.color} strokeWidth={isSel ? 3.5 : 2} strokeDasharray={lineStyle(e.status)} markerEnd={`url(#arrow-${evoKindOf(e.kind)})`} opacity={e.kind === "normal" ? 0.8 : 1} />
+                          <path d={d} fill="none" stroke={info.color} strokeWidth={isSel ? 3.5 : 2} strokeDasharray={lineStyle(e.status)} markerEnd={`url(#arrow-${evoKindOf(e.kind)})`} opacity={e.imported && !e.contexts.length ? 0.35 : e.kind === "normal" ? 0.8 : 1} />
                           {i === 0 && e.kind !== "normal" && (
                             <g transform={`translate(${mx},${my})`}>
                               <rect x={-24} y={-9} width={48} height={18} rx={9} fill="var(--surface)" stroke={info.color} />
@@ -275,6 +273,23 @@ export function EvolutionTree({ graph, mediaOptions, initialMediaId = null }: { 
   );
 }
 
+function ScopeNote({ current, onAll }: { current: Current; onAll: () => void }) {
+  const { t } = useI18n();
+  return (
+    <p className="flex items-start gap-2 rounded-[6px] border border-line bg-surface-2/60 px-3 py-2 text-sm text-muted">
+      <Info size={15} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+      {current ? (
+        <span>
+          {t("Só as evoluções que existem em {name}.", { name: current.name })}{" "}
+          <button type="button" onClick={onAll} className="font-medium text-accent hover:underline">{t("Ver todas as obras")}</button>
+        </span>
+      ) : (
+        <span>{t("Esta visão junta todas as obras: jogos, V-Pets, card games e anime. Nenhum jogo tem todas essas evoluções. Escolha uma obra acima para ver a árvore dela.")}</span>
+      )}
+    </p>
+  );
+}
+
 function TreeNode({ n, x, y, root, selected, dim, onClick, onHover }: { n: GNode; x: number; y: number; root: boolean; selected: boolean; dim: boolean; onClick: () => void; onHover: (h: boolean) => void }) {
   const { t } = useI18n();
   return (
@@ -309,12 +324,12 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <div className="label w-32 shrink-0">{label}</div>
-      <div className="flex flex-wrap items-center gap-1.5">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">{children}</div>
     </div>
   );
 }
 
-function Chip({ active, onClick, children, color, title, disabled }: { active: boolean; onClick: () => void; children: React.ReactNode; color?: string; title?: string; disabled?: boolean }) {
+function Chip({ active, onClick, children, color, title, disabled, plain }: { active: boolean; onClick: () => void; children: React.ReactNode; color?: string; title?: string; disabled?: boolean; plain?: boolean }) {
   return (
     <button
       type="button"
@@ -324,7 +339,13 @@ function Chip({ active, onClick, children, color, title, disabled }: { active: b
       aria-pressed={active}
       className={cn(
         "inline-flex items-center gap-1.5 rounded-[3px] border px-2 py-1 text-xs transition-colors",
-        active ? "border-fg/50 bg-surface-2 text-fg" : "border-line text-muted line-through decoration-muted/50 hover:text-fg",
+        active
+          ? plain
+            ? "border-primary bg-primary/10 font-medium text-primary"
+            : "border-fg/50 bg-surface-2 text-fg"
+          : plain
+            ? "border-line text-fg/85 hover:border-fg/40"
+            : "border-line text-muted line-through decoration-muted/50 hover:text-fg",
         disabled && "cursor-not-allowed opacity-40",
       )}
     >
@@ -341,6 +362,7 @@ function Legend() {
       <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" /></svg>{t("Oficial / da mídia")}</span>
       <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" strokeDasharray="6 5" /></svg>{t("Não confirmada")}</span>
       <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" strokeDasharray="2 5" /></svg>{t("Comunidade (não oficial)")}</span>
+      <span className="flex items-center gap-2"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="currentColor" strokeWidth="2" opacity="0.35" /></svg>{t("Sem obra definida")}</span>
       <span>{t("A cor da linha indica o tipo de evolução. Borda destacada = Digimon central.")}</span>
     </div>
   );
@@ -444,7 +466,6 @@ function EdgeGroup({ title, edges, byId, pick, onEdge }: { title: string; edges:
 
 export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> }) {
   const { t } = useI18n();
-  const MEDIA_KIND_LABEL = (k: string) => t(MEDIA_KINDS[mediaKindOf(k)].label);
   return (
     <div className="space-y-4">
       <div>
@@ -472,11 +493,25 @@ export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> })
         </div>
       )}
       {e.notes && <p className="rounded-[4px] bg-surface-2 p-2.5 text-sm">{e.notes}</p>}
+      {e.imported && !e.contexts.length && <p className="rounded-[4px] bg-surface-2 p-2.5 text-xs text-muted">{t("Importada sem a obra de origem. Não dá para saber em qual jogo ou anime ela acontece.")}</p>}
       {e.contexts.length > 0 && <div>
-        <div className="mb-1.5 label">{t("Onde essa evolução aparece")}</div>
-        {(
+        <div className="mb-1.5 label">{t("Onde essa evolução aparece ({n})", { n: e.contexts.length })}</div>
+        <ContextList contexts={e.contexts} />
+      </div>}
+    </div>
+  );
+}
+
+function ContextList({ contexts }: { contexts: GEdge["contexts"] }) {
+  const { t } = useI18n();
+  const MEDIA_KIND_LABEL = (k: string) => t(MEDIA_KINDS[mediaKindOf(k)].label);
+  const detailed = contexts.filter((c) => c.requirements || c.notes);
+  const plain = contexts.filter((c) => !c.requirements && !c.notes);
+  return (
+    <div className="space-y-3">
+      {detailed.length > 0 && (
           <ul className="space-y-2">
-            {e.contexts.map((c) => (
+            {detailed.map((c) => (
               <li key={c.mediaId} className="rounded-[4px] border border-line p-2.5">
                 <div className="flex items-start justify-between gap-2">
                   <Link href={`/universos/${c.mediaSlug}`} className="text-sm font-semibold hover:text-primary">{c.mediaName}</Link>
@@ -492,8 +527,23 @@ export function EdgeDetails({ e, byId }: { e: GEdge; byId: Map<number, GNode> })
               </li>
             ))}
           </ul>
-        )}
-      </div>}
+      )}
+      {MEDIA_KIND_KEYS.map((k) => {
+        const list = plain.filter((c) => mediaKindOf(c.mediaKind) === k);
+        if (!list.length) return null;
+        return (
+          <div key={k}>
+            <div className="mb-1 text-[11px] font-medium text-muted">{t(MEDIA_KINDS[k].plural)}</div>
+            <div className="flex flex-wrap gap-1">
+              {list.map((c) => (
+                <Link key={c.mediaId} href={`/universos/${c.mediaSlug}`} className="rounded-[3px] border border-line px-1.5 py-0.5 text-[11px] hover:border-fg/40 hover:text-primary">
+                  {c.mediaName}
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

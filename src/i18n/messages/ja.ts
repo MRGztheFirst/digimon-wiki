@@ -356,6 +356,20 @@ const ja: Record<string, string> = {
   "{n} sistemas": "{n}件のシステム",
   "{n} tipos": "{n}種族",
   "“Específica da mídia” é sempre acompanhada da obra (jogo, anime, filme, mangá, V-Pet ou card game) em que vale. Regras de um jogo nunca são apresentadas como universais.": "「作品固有」の情報には、必ず有効な作品（ゲーム、アニメ、映画、漫画、V-Pet、カードゲーム）が示される。あるゲームのルールを共通ルールとして扱うことはない。",
+  "Sem obra definida": "作品不明",
+  "Ligações importadas sem a obra de origem. Ficam ocultas por padrão.": "出典作品が不明なインポート済みのつながり。初期状態では非表示です。",
+  "Ver a árvore de": "表示する作品",
+  "Buscar obra": "作品を検索",
+  "Buscar obra...": "作品を検索...",
+  "Nenhuma obra encontrada.": "作品が見つかりません。",
+  "Só as evoluções que existem em {name}.": "{name}に存在する進化のみ表示しています。",
+  "Ver todas as obras": "すべての作品を表示",
+  "Esta visão junta todas as obras: jogos, V-Pets, card games e anime. Nenhum jogo tem todas essas evoluções. Escolha uma obra acima para ver a árvore dela.": "この表示はゲーム、V-Pet、カードゲーム、アニメなどすべての作品をまとめたものです。これらの進化をすべて持つゲームはありません。上で作品を選ぶと、その作品だけのツリーが表示されます。",
+  "Importada sem a obra de origem. Não dá para saber em qual jogo ou anime ela acontece.": "出典作品なしでインポートされた進化です。どのゲームやアニメのものかは分かりません。",
+  "Onde essa evolução aparece ({n})": "この進化が登場する作品（{n}）",
+  "Outras obras citadas no Wikimon ({n})": "Wikimonで言及されているその他の作品（{n}）",
+  "Mostrando {shown} de {n}. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.": "{n}件中{shown}件を表示中。残りはデジモンの進化ルートを開き、この作品を選ぶと表示されます。",
+  "+{n} outras": "ほか{n}件",
 };
 
 export default ja;

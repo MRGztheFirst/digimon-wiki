@@ -4,8 +4,8 @@ export function edgeVisible(e: GEdge, f: GraphFilters) {
   if (!f.statuses.has(e.status)) return false;
   if (!f.kinds.has(e.kind)) return false;
   if (f.mediaId != null) return e.contexts.some((c) => c.mediaId === f.mediaId);
-  if (e.contexts.length === 0) return f.mediaKinds.has("general");
-  return e.contexts.some((c) => f.mediaKinds.has(c.mediaKind)) || (f.mediaKinds.has("general") && e.status === "official");
+  if (e.contexts.length === 0) return f.mediaKinds.has(e.imported ? "unknown" : "general");
+  return e.contexts.some((c) => f.mediaKinds.has(c.mediaKind)) || (f.mediaKinds.has("general") && e.status === "official" && !e.imported);
 }
 
 export function filterGraph(g: GraphData, f: GraphFilters) {

@@ -34,11 +34,13 @@ export default async function UniversesPage() {
         {MEDIA_KIND_KEYS.map((k) => {
           const list = media.filter((m) => mediaKindOf(m.kind) === k);
           if (!list.length) return null;
+          const main = list.filter((m) => !m.imported);
+          const extra = list.filter((m) => m.imported).sort((a, b) => b._count.evolutionContexts - a._count.evolutionContexts);
           const Icon = ICONS[k];
           return (
             <Section key={k} title={t(MEDIA_KINDS[k].plural)} icon={<Icon size={20} />}>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {list.map((m) => (
+              {main.length > 0 && <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {main.map((m) => (
                   <Link key={m.id} href={`/universos/${m.slug}`} className="card group flex flex-col p-5 transition hover:border-fg/40" style={{ borderTop: `3px solid ${m.color}` }}>
                     <div className="font-display text-lg font-semibold leading-tight group-hover:text-primary">{ln(m)}</div>
                     <div className="mt-0.5 text-xs text-muted">{[yearRange(m.year, m.endYear), m.platform].filter(Boolean).join(" · ")}</div>
@@ -50,7 +52,20 @@ export default async function UniversesPage() {
                     </div>
                   </Link>
                 ))}
-              </div>
+              </div>}
+              {extra.length > 0 && (
+                <div className={main.length ? "mt-6" : undefined}>
+                  <div className="label mb-1">{t("Outras obras citadas no Wikimon ({n})", { n: extra.length })}</div>
+                  <div className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {extra.map((m) => (
+                      <Link key={m.id} href={`/universos/${m.slug}`} className="flex items-baseline justify-between gap-3 border-b border-line py-2 text-sm hover:text-primary">
+                        <span className="truncate">{ln(m)}</span>
+                        <span className="shrink-0 font-mono text-[11px] text-muted">{t("{n} evoluções", { n: m._count.evolutionContexts })}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </Section>
           );
         })}
