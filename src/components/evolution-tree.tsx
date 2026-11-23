@@ -64,7 +64,9 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
       left: Math.max(0, (root.x + NODE_W / 2) * zoom - el.clientWidth / 2),
       top: Math.max(0, (root.y + NODE_H / 2) * zoom - el.clientHeight / 2),
     });
-  }, [graph.rootId, view]);
+  }, [graph, view]);
+
+  useEffect(() => setSelected({ type: "node", id: graph.rootId }), [graph.rootId]);
 
   const focusId = hover ?? (selected?.type === "node" ? selected.id : null);
   const lineage = useMemo(() => {
@@ -248,7 +250,7 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
             </div>
           </div>
         ) : (
-          <EdgeList edges={edges} byId={byId} onSelect={(id) => setSelected({ type: "edge", id })} />
+          <EdgeList edges={edges} byId={byId} onSelect={(id) => setSelected({ type: "edge", id })} selectedId={selected?.type === "edge" ? selected.id : null} showMedia={!current} />
         )}
         <Legend />
       </div>
@@ -548,30 +550,89 @@ function ContextList({ contexts }: { contexts: GEdge["contexts"] }) {
   );
 }
 
-function EdgeList({ edges, byId, onSelect }: { edges: GEdge[]; byId: Map<number, GNode>; onSelect: (id: number) => void }) {
+function EdgeList({ edges, byId, onSelect, selectedId, showMedia }: { edges: GEdge[]; byId: Map<number, GNode>; onSelect: (id: number) => void; selectedId: number | null; showMedia: boolean }) {
   const { t } = useI18n();
-  const sorted = [...edges].sort((a, b) => (byId.get(a.from)?.stageOrder ?? 0) - (byId.get(b.from)?.stageOrder ?? 0));
+  const stages = useMemo(() => {
+    const order = (id: number) => byId.get(id)?.stageOrder ?? 999;
+    const name = (id: number) => byId.get(id)?.name ?? "";
+    const bySource = new Map<number, GEdge[]>();
+    for (const e of edges) bySource.set(e.from, [...(bySource.get(e.from) ?? []), e]);
+    const sources = [...bySource.keys()].sort((a, b) => order(a) - order(b) || name(a).localeCompare(name(b)));
+    const out: { key: string; label: string; color: string; rows: { source: number; list: GEdge[] }[] }[] = [];
+    for (const s of sources) {
+      const n = byId.get(s);
+      const label = n?.stageName ?? "";
+      let group = out[out.length - 1];
+      if (!group || group.label !== label) {
+        group = { key: `${label}-${out.length}`, label, color: n?.stageColor ?? "var(--muted)", rows: [] };
+        out.push(group);
+      }
+      group.rows.push({ source: s, list: bySource.get(s)!.sort((a, b) => order(a.to) - order(b.to) || name(a.to).localeCompare(name(b.to))) });
+    }
+    return out;
+  }, [edges, byId]);
+
+  if (!edges.length) return <p className="card p-6 text-center text-sm text-muted">{t("Nenhuma conexão com os filtros atuais.")}</p>;
+
   return (
-    <div className="card divide-y divide-line">
-      {sorted.map((e) => (
-        <button key={e.id} onClick={() => onSelect(e.id)} className="flex w-full flex-col gap-2 p-3 text-left hover:bg-surface-2 sm:flex-row sm:items-center">
-          <span className="flex flex-1 flex-wrap items-center gap-1.5 text-sm">
-            <b>{byId.get(e.from)?.name}</b>
-            {e.partners.map((p) => <span key={p}>+ <b>{byId.get(p)?.name}</b></span>)}
-            <span className="text-muted">→</span>
-            <b>{byId.get(e.to)?.name}</b>
-          </span>
-          <span className="flex flex-wrap gap-1">
-            <KindPill k={e.kind} />
-            <StatusPill s={e.status} />
-            {e.contexts.slice(0, 3).map((c) => (
-              <span key={c.mediaId} className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">{c.mediaName}</span>
-            ))}
-            {e.contexts.length > 3 && <span className="text-[11px] text-muted">+{e.contexts.length - 3}</span>}
-          </span>
-        </button>
+    <div className="space-y-6">
+      {stages.map((g) => (
+        <section key={g.key}>
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted">
+            <span className="h-2 w-2 rounded-full" style={{ background: g.color }} aria-hidden="true" />
+            {g.label}
+          </h3>
+          <div className="card divide-y divide-line">
+            {g.rows.map(({ source, list }) => {
+              const from = byId.get(source);
+              if (!from) return null;
+              return (
+                <div key={source} className="grid gap-3 p-3 sm:grid-cols-[minmax(0,200px)_1fr] sm:gap-4">
+                  <div className="flex min-w-0 items-center gap-2.5 sm:h-11">
+                    <DigimonAvatar name={from.name} imageUrl={from.imageUrl} className="h-10 w-10 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate font-semibold">{from.name}</span>
+                    <span className="hidden text-muted sm:inline" aria-hidden="true">→</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {list.map((e) => {
+                      const to = byId.get(e.to);
+                      if (!to) return null;
+                      const info = EVOLUTION_KINDS[evoKindOf(e.kind)];
+                      const partners = e.partners.map((p) => byId.get(p)?.name).filter(Boolean);
+                      const unknown = e.imported && !e.contexts.length;
+                      return (
+                        <button
+                          key={e.id}
+                          type="button"
+                          onClick={() => onSelect(e.id)}
+                          aria-pressed={selectedId === e.id}
+                          className={cn(
+                            "flex max-w-full items-center gap-2 rounded-[6px] border bg-surface p-1 pr-2.5 text-left transition-colors hover:border-fg/40",
+                            selectedId === e.id ? "border-primary" : "border-line",
+                            unknown && "opacity-60",
+                          )}
+                        >
+                          <DigimonAvatar name={to.name} imageUrl={to.imageUrl} className="h-9 w-9 shrink-0" />
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-medium leading-tight">{to.name}</span>
+                            <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-tight text-muted">
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: to.stageColor }} aria-hidden="true" />
+                              {to.stageName}
+                              {e.kind !== "normal" && <span className="font-medium" style={{ color: info.color }}>· {t(info.short)}</span>}
+                              {partners.length > 0 && <span>· {t("com {names}", { names: partners.join(", ") })}</span>}
+                              {showMedia && (unknown ? <span>· {t("Sem obra definida")}</span> : e.contexts.length > 0 && <span>· {t("{n} obras", { n: e.contexts.length })}</span>)}
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
       ))}
-      {!sorted.length && <p className="p-6 text-center text-sm text-muted">{t("Nenhuma conexão com os filtros atuais.")}</p>}
     </div>
   );
 }

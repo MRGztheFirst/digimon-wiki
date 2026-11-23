@@ -59,7 +59,7 @@ export default async function LinePage({ params, searchParams }: { params: Promi
             {t("Nenhuma evolução cadastrada para {name} ainda.", { name: d.name })}{editorEnabled() && <> <Link href="/admin/evolucoes/nova" className="text-primary hover:underline">{t("Adicionar evolução")}</Link>.</>}
           </div>
         ) : (
-          <EvolutionTree key={currentChoice?.slug ?? "all"} graph={graph} slug={d.slug} choices={choices} current={currentChoice} />
+          <EvolutionTree graph={graph} slug={d.slug} choices={choices} current={currentChoice} />
         )}
       </Container>
     </div>
