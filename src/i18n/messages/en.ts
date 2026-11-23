@@ -371,6 +371,20 @@ const en: Record<string, string> = {
   "Outras obras citadas no Wikimon ({n})": "Other titles cited on Wikimon ({n})",
   "Mostrando {shown} de {n}. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.": "Showing {shown} of {n}. To see the rest, open a Digimon's evolution line and pick this title.",
   "+{n} outras": "+{n} more",
+  "Nível": "Level",
+  "Significado": "Meaning",
+  "Na árvore": "In the tree",
+  "Linha contínua": "Solid line",
+  "Linha pontilhada": "Dotted line",
+  "Linha tracejada": "Dashed line",
+  "Regras de exibição": "Display rules",
+  "Fonte": "Source",
+  "Citações": "Citations",
+  "Contextos": "Contexts",
+  "{n} citações": "{n} citations",
+  "{n} contextos": "{n} contexts",
+  "Ainda sem uso": "Not used yet",
+  "Uso no banco": "Usage in the database",
 };
 
 export default en;

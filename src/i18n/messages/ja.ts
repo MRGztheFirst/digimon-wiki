@@ -371,6 +371,20 @@ const ja: Record<string, string> = {
   "Outras obras citadas no Wikimon ({n})": "Wikimonで言及されているその他の作品（{n}）",
   "Mostrando {shown} de {n}. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.": "{n}件中{shown}件を表示中。残りはデジモンの進化ルートを開き、この作品を選ぶと表示されます。",
   "+{n} outras": "ほか{n}件",
+  "Nível": "レベル",
+  "Significado": "意味",
+  "Na árvore": "ツリーでの表示",
+  "Linha contínua": "実線",
+  "Linha pontilhada": "点線",
+  "Linha tracejada": "破線",
+  "Regras de exibição": "表示ルール",
+  "Fonte": "出典",
+  "Citações": "引用",
+  "Contextos": "文脈",
+  "{n} citações": "引用{n}件",
+  "{n} contextos": "文脈{n}件",
+  "Ainda sem uso": "未使用",
+  "Uso no banco": "データベースでの使用",
 };
 
 export default ja;
