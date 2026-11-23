@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getI18n } from "@/i18n/server";
 
@@ -58,11 +59,17 @@ export function Section({
   );
 }
 
-export async function SeeAll({ href, children }: { href: string; children?: React.ReactNode }) {
+export async function SeeAll({ href, children, icon }: { href: string; children?: React.ReactNode; icon?: React.ReactNode }) {
   const { t } = await getI18n();
   return (
-    <Link href={href} className="shrink-0 text-sm font-medium text-accent hover:underline">
-      {children ?? t("Ver todos")} →
+    <Link
+      href={href}
+      className="group inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[6px] border border-line bg-surface px-3 text-[13px] font-medium text-fg/85 transition-colors hover:border-primary/70 hover:text-primary"
+    >
+      {children ?? t("Ver todos")}
+      <span className="text-muted transition-[color,transform] duration-200 group-hover:translate-x-0.5 group-hover:text-primary motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true">
+        {icon ?? <ArrowRight size={14} />}
+      </span>
     </Link>
   );
 }

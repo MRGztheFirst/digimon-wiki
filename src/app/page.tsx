@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Shuffle } from "lucide-react";
 import { db } from "@/lib/db";
 import { cardSelect } from "@/lib/queries";
 import { randomDigimon } from "@/lib/random";
@@ -147,7 +148,7 @@ export default async function Home() {
           </Section>
         </div>
 
-        <Section title={t("Ao acaso")} description={t("Uma seleção diferente a cada visita.")} action={<SeeAll href="/digimon/aleatorio">{t("Sortear um")}</SeeAll>}>
+        <Section title={t("Ao acaso")} description={t("Uma seleção diferente a cada visita.")} action={<SeeAll href="/digimon/aleatorio" icon={<Shuffle size={14} />}>{t("Sortear um")}</SeeAll>}>
           <DigimonGrid items={random} />
         </Section>
 
