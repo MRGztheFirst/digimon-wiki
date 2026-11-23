@@ -391,6 +391,16 @@ const en: Record<string, string> = {
   "Obra": "Title",
   "Sistemas": "Systems",
   "Só a árvore evolutiva": "Evolution tree only",
+  "Linha do tempo da franquia": "Franchise timeline",
+  "{n} obras com página completa, de {from} a {to}.": "{n} titles with a full page, from {from} to {to}.",
+  "Filtrar por tipo": "Filter by type",
+  "Todas": "All",
+  "Nenhuma obra com página completa deste tipo ainda.": "No titles of this type have a full page yet.",
+  "Acervo do Wikimon": "Wikimon archive",
+  "Obras citadas no Wikimon que, por enquanto, só têm a árvore evolutiva. O número é a quantidade de evoluções registradas.": "Titles cited on Wikimon that only have an evolution tree for now. The number is how many evolutions are recorded.",
+  "1 evolução": "1 evolution",
+  "1 sistema": "1 system",
+  "1 obra com página completa, de {year}.": "1 title with a full page, from {year}.",
 };
 
 export default en;

@@ -391,6 +391,16 @@ const ja: Record<string, string> = {
   "Obra": "作品",
   "Sistemas": "システム",
   "Só a árvore evolutiva": "進化ツリーのみ",
+  "Linha do tempo da franquia": "シリーズ年表",
+  "{n} obras com página completa, de {from} a {to}.": "詳細ページのある作品 {n}件（{from}〜{to}年）。",
+  "Filtrar por tipo": "種類で絞り込む",
+  "Todas": "すべて",
+  "Nenhuma obra com página completa deste tipo ainda.": "この種類の詳細ページはまだありません。",
+  "Acervo do Wikimon": "Wikimonアーカイブ",
+  "Obras citadas no Wikimon que, por enquanto, só têm a árvore evolutiva. O número é a quantidade de evoluções registradas.": "Wikimonで言及されている作品で、現在は進化ツリーのみ掲載しています。数字は登録済みの進化数です。",
+  "1 evolução": "1件の進化",
+  "1 sistema": "1件のシステム",
+  "1 obra com página completa, de {year}.": "詳細ページのある作品 1件（{year}年）。",
 };
 
 export default ja;
