@@ -37,7 +37,7 @@ export default async function Home() {
     db.attribute.findMany({ include: { _count: { select: { digimon: true } } } }),
     db.digimonType.findMany({ include: { _count: { select: { digimon: true } } }, orderBy: { digimon: { _count: "desc" } }, take: 18 }),
     db.family.findMany({ orderBy: { name: "asc" }, include: { _count: { select: { digimon: true } } } }),
-    db.media.findMany({ where: { kind: { in: ["anime", "game"] } }, orderBy: { year: "asc" } }),
+    db.media.findMany({ where: { kind: { in: ["anime", "game"] }, imported: false }, orderBy: { year: "asc" } }),
     db.digimon.findMany({ where: { slug: { in: POPULAR_LINES } }, select: { ...cardSelect, _count: { select: { evolutionsFrom: true, evolutionsTo: true } } } }),
     db.digimon.findMany({ where: { slug: { in: QUICK } }, select: { slug: true, name: true } }),
     db.digimon.findMany({ where: { slug: { in: SHOWCASE }, imageUrl: { not: null } }, select: { slug: true, name: true, imageUrl: true, stage: { select: { name: true, color: true } } } }),
