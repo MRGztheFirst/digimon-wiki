@@ -6,6 +6,8 @@ import { cardSelect } from "@/lib/queries";
 import { Container, PageHeader, Section } from "@/components/ui";
 import { DigimonAvatar } from "@/components/digimon-avatar";
 import { EvoKindBadge } from "@/components/badges";
+import { EvolutionKindGlyph } from "@/components/evolution-kind-glyph";
+import { cn } from "@/lib/utils";
 import { LinePicker } from "./line-picker";
 import { EVOLUTION_KINDS, EVOLUTION_KIND_KEYS } from "@/lib/constants";
 import { getI18n } from "@/i18n/server";
@@ -16,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LinesIndex() {
-  const { t, td } = await getI18n();
+  const { t, td, num } = await getI18n();
   const [roots, kindCounts, specials] = await Promise.all([
     db.digimon.findMany({
       where: { stage: { slug: { in: ["novato", "hibrido"] } }, evolutionsFrom: { some: { imported: false } } },
@@ -31,6 +33,7 @@ export default async function LinesIndex() {
     }),
   ]);
   const count = (k: string) => kindCounts.find((c) => c.kind === k)?._count._all ?? 0;
+  const recorded = (n: number) => (n === 1 ? t("{n} registrada", { n: num(n) }) : t("{n} registradas", { n: num(n) }));
 
   return (
     <div>
@@ -59,16 +62,24 @@ export default async function LinesIndex() {
         </Section>
 
         <Section title={t("Tipos de evolução")} description={t("Cada conexão da árvore tem um tipo. As especiais aparecem destacadas e coloridas.")}>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {EVOLUTION_KIND_KEYS.map((k) => (
-              <div key={k} className="card p-4" style={{ borderTop: `3px solid ${EVOLUTION_KINDS[k].color}` }}>
-                <div className="flex items-center justify-between">
-                  <div className="font-semibold">{t(EVOLUTION_KINDS[k].label)}</div>
-                  <span className="text-xs text-muted">{t("{n} registradas", { n: count(k) })}</span>
+          <div className="grid gap-px overflow-hidden rounded-[8px] border border-line bg-line sm:grid-cols-2">
+            {EVOLUTION_KIND_KEYS.map((k) => {
+              const info = EVOLUTION_KINDS[k];
+              const n = count(k);
+              return (
+                <div key={k} className={cn("group flex items-center gap-4 bg-surface p-4", k === "normal" && "sm:col-span-2")}>
+                  <span className="flex h-12 w-[4.5rem] shrink-0 items-center justify-center rounded-[6px] border border-line bg-bg">
+                    <EvolutionKindGlyph kind={k} color={info.color} className="h-8 w-14" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold leading-tight">{t(info.label)}</span>
+                    <span className="mt-0.5 block text-sm text-muted">{t(info.description)}</span>
+                    <span className={cn("mt-1.5 block font-mono text-xs tabular-nums sm:hidden", n ? "text-fg" : "text-muted")}>{recorded(n)}</span>
+                  </span>
+                  <span className={cn("hidden shrink-0 text-right font-mono text-xs tabular-nums sm:block", n ? "text-fg" : "text-muted")}>{recorded(n)}</span>
                 </div>
-                <p className="mt-1 text-sm text-muted">{t(EVOLUTION_KINDS[k].description)}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Section>
 

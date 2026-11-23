@@ -353,6 +353,7 @@ const en: Record<string, string> = {
   "{n} famílias": "{n} families",
   "{n} obras": "{n} titles",
   "{n} registradas": "{n} recorded",
+  "{n} registrada": "{n} recorded",
   "{n} sistemas": "{n} systems",
   "{n} tipos": "{n} types",
   "“Específica da mídia” é sempre acompanhada da obra (jogo, anime, filme, mangá, V-Pet ou card game) em que vale. Regras de um jogo nunca são apresentadas como universais.": "“Media-specific” always comes with the title (game, anime, movie, manga, V-Pet or card game) where it applies. A game's rules are never presented as universal.",

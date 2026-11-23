@@ -353,6 +353,7 @@ const ja: Record<string, string> = {
   "{n} famílias": "{n}のフィールド",
   "{n} obras": "{n}作品",
   "{n} registradas": "{n}件登録",
+  "{n} registrada": "{n}件登録",
   "{n} sistemas": "{n}件のシステム",
   "{n} tipos": "{n}種族",
   "“Específica da mídia” é sempre acompanhada da obra (jogo, anime, filme, mangá, V-Pet ou card game) em que vale. Regras de um jogo nunca são apresentadas como universais.": "「作品固有」の情報には、必ず有効な作品（ゲーム、アニメ、映画、漫画、V-Pet、カードゲーム）が示される。あるゲームのルールを共通ルールとして扱うことはない。",
