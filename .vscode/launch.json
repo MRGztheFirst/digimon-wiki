@@ -2,51 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Rodar a wiki",
-      "type": "node-terminal",
+      "name": "Abrir a wiki",
+      "type": "msedge",
       "request": "launch",
-      "command": "npm run dev",
-      "cwd": "${workspaceFolder}",
-      "serverReadyAction": {
-        "pattern": "- Local:\\s+(https?://\\S+)",
-        "uriFormat": "%s",
-        "action": "openExternally"
-      }
-    },
-    {
-      "name": "Rodar a wiki (depurar servidor)",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
-      "args": ["dev"],
-      "runtimeArgs": ["--inspect"],
-      "cwd": "${workspaceFolder}",
-      "skipFiles": ["<node_internals>/**"],
-      "console": "integratedTerminal",
-      "serverReadyAction": {
-        "pattern": "- Local:\\s+(https?://\\S+)",
-        "uriFormat": "%s",
-        "action": "openExternally"
-      }
-    },
-    {
-      "name": "Prévia de produção",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "npm run preview",
-      "cwd": "${workspaceFolder}",
-      "serverReadyAction": {
-        "pattern": "- Local:\\s+(https?://\\S+)",
-        "uriFormat": "%s",
-        "action": "openExternally"
-      }
-    },
-    {
-      "name": "Preparar banco de dados (primeira vez)",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "npm run setup",
-      "cwd": "${workspaceFolder}"
+      "url": "http://localhost:3000"
     }
   ]
 }
