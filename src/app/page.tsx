@@ -10,16 +10,23 @@ import { MEDIA_KINDS } from "@/lib/constants";
 import { yearRange } from "@/lib/utils";
 import { AttributeIcon, FamilyIcon } from "@/components/icons";
 import { getI18n } from "@/i18n/server";
+import { ExploreGrid, type ExploreData } from "@/components/explore-grid";
 
 export const dynamic = "force-dynamic";
 
 const POPULAR_LINES = ["agumon", "gabumon", "patamon", "tailmon", "v-mon", "guilmon", "renamon", "terriermon", "agnimon", "omegamon"];
 const QUICK = ["agumon", "omegamon", "tailmon", "imperialdramon-fighter-mode", "beelzebumon"];
+const WALL = ["agumon", "gabumon", "tailmon", "patamon", "guilmon", "renamon", "v-mon", "omegamon", "wargreymon", "beelzebumon", "dukemon", "sakuyamon", "angewomon", "piyomon", "tentomon", "gomamon", "palmon", "terriermon", "impmon", "lucemon", "alphamon", "imperialdramon-fighter-mode", "metalgarurumon", "devimon", "agnimon", "gaomon", "shoutmon", "leomon", "seraphimon", "examon"];
+const CHAIN = ["koromon", "agumon", "greymon", "metalgreymon", "wargreymon"];
+const KNIGHTS = ["omegamon", "dukemon", "alphamon", "examon", "magnamon", "ulforce-v-dramon", "jesmon", "gankoomon"];
+const DUEL = ["agumon", "gabumon"];
+const FUSION = ["xv-mon", "stingmon", "paildramon"];
+const SHOWCASE = [...new Set([...WALL, ...CHAIN, ...KNIGHTS, ...DUEL, ...FUSION])];
 
 
 export default async function Home() {
   const { locale, t, td, ln, num: fmt } = await getI18n();
-  const [counts, featured, popular, recent, random, stages, attributes, types, families, media, lineRoots, quick] = await Promise.all([
+  const [counts, featured, popular, recent, random, stages, attributes, types, families, media, lineRoots, quick, showcase] = await Promise.all([
     Promise.all([db.digimon.count(), db.evolution.count(), db.media.count(), db.digimonType.count()]),
     db.digimon.findMany({ where: { featured: true, imageUrl: { not: null } }, select: { ...cardSelect, summary: true, romaji: true } }),
     db.digimon.findMany({ select: cardSelect, take: 6, orderBy: [{ viewCount: "desc" }, { number: "asc" }] }),
@@ -32,24 +39,37 @@ export default async function Home() {
     db.media.findMany({ where: { kind: { in: ["anime", "game"] } }, orderBy: { year: "asc" } }),
     db.digimon.findMany({ where: { slug: { in: POPULAR_LINES } }, select: { ...cardSelect, _count: { select: { evolutionsFrom: true, evolutionsTo: true } } } }),
     db.digimon.findMany({ where: { slug: { in: QUICK } }, select: { slug: true, name: true } }),
+    db.digimon.findMany({ where: { slug: { in: SHOWCASE }, imageUrl: { not: null } }, select: { slug: true, name: true, imageUrl: true, stage: { select: { name: true, color: true } } } }),
   ]);
   const [nDigimon, nEvo, nMedia, nTypes] = counts;
   const spot = featured.length ? featured[Math.floor(Math.random() * featured.length)] : null;
   const lines = POPULAR_LINES.map((s) => lineRoots.find((d) => d.slug === s)).filter((d): d is NonNullable<typeof d> => !!d);
   const quickLinks = QUICK.map((s) => quick.find((q) => q.slug === s)).filter((q): q is NonNullable<typeof q> => !!q);
   const mainStages = stages.filter((s) => !s.isSpecial);
-  const explore: [string, string, string][] = [
-    ["/digimon", t("Enciclopédia"), `${fmt(nDigimon)} Digimon`],
-    ["/linhas", t("Linhas evolutivas"), t("{n} evoluções", { n: fmt(nEvo) })],
-    ["/universos", t("Digimon por Universo"), t("{n} obras", { n: fmt(nMedia) })],
-    ["/estagios", t("Estágios"), t("{n} estágios", { n: stages.length })],
-    ["/atributos", t("Atributos"), t("{n} atributos", { n: attributes.length })],
-    ["/tipos", t("Tipos"), t("{n} tipos", { n: fmt(nTypes) })],
-    ["/familias", t("Famílias"), t("{n} famílias", { n: families.length })],
-    ["/grupos", t("Grupos"), t("Royal Knights e outros")],
-    ["/comparar", t("Comparador"), t("Até 4 lado a lado")],
-    ["/curiosidades", t("Curiosidades"), t("Fusões e variantes")],
-  ];
+  const pick = (slug: string) => showcase.find((m) => m.slug === slug);
+  const picks = (slugs: string[]) => slugs.map(pick).filter((m): m is NonNullable<typeof m> => !!m);
+  const explore: ExploreData = {
+    encyclopedia: { href: "/digimon", title: t("Enciclopédia"), stat: `${fmt(nDigimon)} Digimon` },
+    lines: { href: "/linhas", title: t("Linhas evolutivas"), stat: t("{n} evoluções", { n: fmt(nEvo) }) },
+    universes: { href: "/universos", title: t("Digimon por Universo"), stat: t("{n} obras", { n: fmt(nMedia) }) },
+    stages: { href: "/estagios", title: t("Estágios"), stat: t("{n} estágios", { n: stages.length }) },
+    attributes: { href: "/atributos", title: t("Atributos"), stat: t("{n} atributos", { n: attributes.length }) },
+    types: { href: "/tipos", title: t("Tipos"), stat: t("{n} tipos", { n: fmt(nTypes) }) },
+    families: { href: "/familias", title: t("Famílias"), stat: t("{n} famílias", { n: families.length }) },
+    groups: { href: "/grupos", title: t("Grupos"), stat: t("Royal Knights e outros") },
+    compare: { href: "/comparar", title: t("Comparador"), stat: t("Até 4 lado a lado") },
+    trivia: { href: "/curiosidades", title: t("Curiosidades"), stat: t("Fusões e variantes") },
+    wall: picks(WALL),
+    chain: picks(CHAIN).map((m) => ({ ...m, stage: m.stage && { ...m.stage, name: t(m.stage.name) } })),
+    knights: picks(KNIGHTS),
+    duel: [pick(DUEL[0]), pick(DUEL[1])],
+    fusion: [pick(FUSION[0]), pick(FUSION[1]), pick(FUSION[2])],
+    stageBars: mainStages.map((s) => ({ slug: s.slug, name: ln(s), color: s.color })),
+    attributeIcons: attributes.filter((a) => a.slug !== "no-data").map((a) => ({ slug: a.slug, name: ln(a) })),
+    familyIcons: families.map((f) => ({ slug: f.slug, name: ln(f) })),
+    typeNames: types.map((ty) => ln(ty)),
+    mediaStrips: media.filter((m) => m.kind === "anime").map((m) => ({ slug: m.slug, name: ln(m), year: m.year, color: m.color })),
+  };
 
   return (
     <div>
@@ -99,14 +119,7 @@ export default async function Home() {
 
       <Container className="space-y-16 py-12">
         <Section title={t("Explore o Mundo Digital")}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {explore.map(([href, title, stat]) => (
-              <Link key={href} href={href} className="card group px-4 py-3.5 transition-colors hover:border-primary/60">
-                <span className="block font-semibold group-hover:text-primary">{title}</span>
-                <span className="mt-0.5 block text-[13px] text-muted">{stat}</span>
-              </Link>
-            ))}
-          </div>
+          <ExploreGrid d={explore} />
         </Section>
 
         <Section title={t("Linhas evolutivas")} description={t("Comece por um Novato e veja para onde ele pode evoluir.")} action={<SeeAll href="/linhas" />}>
