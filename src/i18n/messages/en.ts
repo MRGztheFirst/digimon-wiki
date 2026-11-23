@@ -385,6 +385,12 @@ const en: Record<string, string> = {
   "{n} contextos": "{n} contexts",
   "Ainda sem uso": "Not used yet",
   "Uso no banco": "Usage in the database",
+  "{n} com página completa": "{n} with a full page",
+  "{n} citadas no Wikimon": "{n} cited on Wikimon",
+  "Ano": "Year",
+  "Obra": "Title",
+  "Sistemas": "Systems",
+  "Só a árvore evolutiva": "Evolution tree only",
 };
 
 export default en;

@@ -385,6 +385,12 @@ const ja: Record<string, string> = {
   "{n} contextos": "文脈{n}件",
   "Ainda sem uso": "未使用",
   "Uso no banco": "データベースでの使用",
+  "{n} com página completa": "詳細ページあり {n}件",
+  "{n} citadas no Wikimon": "Wikimonで言及 {n}件",
+  "Ano": "年",
+  "Obra": "作品",
+  "Sistemas": "システム",
+  "Só a árvore evolutiva": "進化ツリーのみ",
 };
 
 export default ja;
