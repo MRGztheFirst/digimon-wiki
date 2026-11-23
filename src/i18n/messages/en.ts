@@ -401,6 +401,14 @@ const en: Record<string, string> = {
   "1 evolução": "1 evolution",
   "1 sistema": "1 system",
   "1 obra com página completa, de {year}.": "1 title with a full page, from {year}.",
+  "Os tipos mais comuns": "Most common types",
+  "{n} tipos cadastrados": "{n} types recorded",
+  "Todos os tipos": "All types",
+  "Buscar tipo...": "Search types...",
+  "Buscar tipo": "Search types",
+  "Limpar busca": "Clear search",
+  "Ir para a letra": "Jump to letter",
+  "Nenhum tipo encontrado.": "No types found.",
 };
 
 export default en;

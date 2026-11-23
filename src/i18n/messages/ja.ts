@@ -401,6 +401,14 @@ const ja: Record<string, string> = {
   "1 evolução": "1件の進化",
   "1 sistema": "1件のシステム",
   "1 obra com página completa, de {year}.": "詳細ページのある作品 1件（{year}年）。",
+  "Os tipos mais comuns": "多いタイプ",
+  "{n} tipos cadastrados": "登録タイプ {n}件",
+  "Todos os tipos": "すべてのタイプ",
+  "Buscar tipo...": "タイプを検索...",
+  "Buscar tipo": "タイプを検索",
+  "Limpar busca": "検索をクリア",
+  "Ir para a letra": "頭文字へ移動",
+  "Nenhum tipo encontrado.": "タイプが見つかりません。",
 };
 
 export default ja;
