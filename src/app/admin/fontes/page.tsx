@@ -3,7 +3,7 @@ import { AdminTitle, Flash, Input, Panel, Select, Textarea } from "../_component
 import { DeleteButton, SubmitButton } from "../_components/client";
 import { deleteSource, saveSource } from "../actions";
 import { SOURCE_KINDS, type SourceKind } from "@/lib/constants";
-import type { Source } from "@prisma/client";
+import type { Source } from "@/generated/prisma/client";
 import type { SP } from "../_lib";
 
 const kindOptions = Object.entries(SOURCE_KINDS) as [string, string][];

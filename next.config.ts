@@ -5,6 +5,7 @@ const isProdCommand = process.env.NODE_ENV === "production";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
+  allowedDevOrigins: ["172.16.20.223"],
   distDir: isProdCommand ? ".next-prod" : ".next",
   images: {
     remotePatterns: [{ protocol: "https", hostname: "digi-api.com", pathname: "/images/**" }],
@@ -12,15 +13,6 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: { bodySizeLimit: "8mb" },
-  },
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.watchOptions = {
-        ...config.watchOptions,
-        ignored: ["**/.git/**", "**/node_modules/**", "**/.next/**", "**/.next-prod/**", "**/*.db", "**/*.db-journal", "**/*.db-wal", "**/*.db-shm", "**/uploads/**", "**/prisma/.cache/**"],
-      };
-    }
-    return config;
   },
 };
 

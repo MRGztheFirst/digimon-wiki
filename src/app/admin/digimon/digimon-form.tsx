@@ -4,7 +4,7 @@ import { saveDigimon } from "../actions";
 import { Checkbox, Input, Panel, Select, Textarea } from "../_components/form";
 import { DigimonPicker, SubmitButton } from "../_components/client";
 import { statusOptions } from "../_lib";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 
 type Full = Prisma.DigimonGetPayload<{ include: { types: true; families: true; groups: true; base: { select: { id: true; name: true } } } }>;
 

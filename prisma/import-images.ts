@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { createPrisma } from "./client";
 
-const prisma = new PrismaClient();
+const prisma = createPrisma();
 const API = "https://digi-api.com/api/v1/digimon?pageSize=5000";
 const CREDIT = "Arte oficial © Bandai — via Digi-API / Wikimon";
 

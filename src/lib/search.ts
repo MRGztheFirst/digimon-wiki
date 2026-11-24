@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { db } from "./db";
 import { cardSelect } from "./queries";
 import { PAGE_SIZE } from "./constants";

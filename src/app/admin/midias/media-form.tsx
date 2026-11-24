@@ -1,4 +1,4 @@
-import type { Media, MediaStage } from "@prisma/client";
+import type { Media, MediaStage } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { MEDIA_KINDS } from "@/lib/constants";
 import { saveMedia } from "../actions";

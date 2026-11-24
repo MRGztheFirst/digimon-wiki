@@ -1,9 +1,9 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { PrismaClient } from "@prisma/client";
+import { createPrisma } from "./client";
 import { PAGES_FILE, type PageCache } from "./fetch-wikimon";
 
-const prisma = new PrismaClient();
+const prisma = createPrisma();
 
 const SITE = "https://tamerdex.com";
 const CACHE_DIR = path.join(__dirname, ".cache", "tamerdex");

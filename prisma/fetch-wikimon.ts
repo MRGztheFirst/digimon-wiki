@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { PrismaClient } from "@prisma/client";
+import { createPrisma } from "./client";
 
 const API = "https://wikimon.net/api.php";
 export const WIKIMON_DIR = path.join(__dirname, ".cache", "wikimon");
@@ -126,7 +126,7 @@ async function fetchMedia(pages: PageCache) {
 
 async function main() {
   await mkdir(WIKIMON_DIR, { recursive: true });
-  const db = new PrismaClient();
+  const db = createPrisma();
   const names = (await db.digimon.findMany({ select: { name: true } })).map((d) => d.name);
   await db.$disconnect();
   const pages = await fetchPages(names);

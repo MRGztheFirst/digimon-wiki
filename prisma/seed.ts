@@ -1,10 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { createPrisma } from "./client";
 import { stages, attributes, types, families, groups, sources } from "./seed-data/taxonomy";
 import { media } from "./seed-data/media";
 import { digimon } from "./seed-data/digimon";
 import { evolutions, appearances } from "./seed-data/relations";
 
-const prisma = new PrismaClient();
+const prisma = createPrisma();
 
 function wikimonSearch(q: string) {
   return `https://wikimon.net/index.php?search=${encodeURIComponent(q)}`;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { AdminTitle, Flash } from "../_components/form";
 import { EvoKindBadge, StatusBadge } from "@/components/badges";

@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { createPrisma } from "./client";
 import { readCache } from "./fetch-digiapi";
 
-const prisma = new PrismaClient();
+const prisma = createPrisma();
 const CREDIT = "Arte oficial © Bandai — via Digi-API / Wikimon";
 
 type ApiRef = { id: number; digimon: string; condition: string };

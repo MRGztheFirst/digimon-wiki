@@ -38,7 +38,7 @@ const themeScript = `try{if(localStorage.getItem('theme')==='light'){document.do
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale } = await getI18n();
   return (
-    <html lang={LOCALE_INFO[locale].htmlLang} className="dark" suppressHydrationWarning>
+    <html lang={LOCALE_INFO[locale].htmlLang} className="dark" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

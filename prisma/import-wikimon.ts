@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
-import { PrismaClient } from "@prisma/client";
+import { createPrisma } from "./client";
 import { MEDIA_FILE, PAGES_FILE, type MediaCache, type PageCache } from "./fetch-wikimon";
 
-const prisma = new PrismaClient();
+const prisma = createPrisma();
 
 const SOURCE_TITLE = "Wikimon — evoluções por obra";
 const DCG = "digimon-card-game";
