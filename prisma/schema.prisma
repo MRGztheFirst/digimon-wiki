@@ -113,6 +113,7 @@ model Digimon {
   evolutionsTo   Evolution[]        @relation("EvolutionTo")
   partnerIn      EvolutionPartner[]
   citations      Citation[]
+  gameStats      GameStats[]
 
   @@index([name])
   @@index([stageId])
@@ -154,6 +155,26 @@ model GroupMember {
 
   @@id([digimonId, groupId])
   @@index([groupId])
+}
+
+model GameStats {
+  id        Int     @id @default(autoincrement())
+  digimonId Int
+  game      String
+  hp        Int?
+  mp        Int?
+  atk       Int?
+  def       Int?
+  spi       Int?
+  spd       Int?
+  apt       Int?
+  maxLevel  Int?
+  strong    String?
+  weak      String?
+  digimon   Digimon @relation(fields: [digimonId], references: [id], onDelete: Cascade)
+
+  @@unique([digimonId, game])
+  @@index([game])
 }
 
 model Attack {

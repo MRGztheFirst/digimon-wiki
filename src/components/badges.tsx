@@ -60,11 +60,11 @@ export async function AttributeBadge({ attribute, link = true }: { attribute?: {
   );
 }
 
-export async function FamilyBadge({ family, link = true, suffix }: { family: { name: string; nameJp?: string | null; slug: string; color: string }; link?: boolean; suffix?: React.ReactNode }) {
+export async function FamilyBadge({ family, link = true, suffix, className }: { family: { name: string; nameJp?: string | null; slug: string; color: string }; link?: boolean; suffix?: React.ReactNode; className?: string }) {
   const { ln } = await getI18n();
   const name = ln(family);
   return (
-    <Pill color={family.color} icon={<FamilyIcon slug={family.slug} name={name} size={15} className="-my-1 -ml-0.5" />} href={link ? `/familias/${family.slug}` : undefined}>
+    <Pill color={family.color} className={className} icon={<FamilyIcon slug={family.slug} name={name} size={15} className="-my-1 -ml-0.5" />} href={link ? `/familias/${family.slug}` : undefined}>
       {name}
       {suffix}
     </Pill>

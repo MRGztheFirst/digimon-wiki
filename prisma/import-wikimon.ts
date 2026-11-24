@@ -85,6 +85,69 @@ function refDefinitions(text: string) {
   return defs;
 }
 
+const STAT_GAMES: [RegExp, string][] = [
+  [/Sunburst/, "sunburst-moonlight"],
+  [/Super Xros Wars/, "super-xros-wars"],
+];
+const STAT_COLUMNS: Record<string, string> = {
+  HP: "hp",
+  MP: "mp",
+  ATK: "atk",
+  STR: "atk",
+  DEF: "def",
+  SPI: "spi",
+  INT: "spi",
+  SPD: "spd",
+  APT: "apt",
+  "Max Lv": "maxLevel",
+  "Strong Element": "strong",
+  Strong: "strong",
+  "Weak Element": "weak",
+  Weak: "weak",
+};
+const GAMEPLAY = /''([^'\n]+?)'' Gameplay Data/g;
+
+type StatRow = { hp?: number | null; mp?: number | null; atk?: number | null; def?: number | null; spi?: number | null; spd?: number | null; apt?: number | null; maxLevel?: number | null; strong?: string | null; weak?: string | null };
+
+const statCell = (line: string) =>
+  line
+    .replace(/\[\[(?:File|Image):[^\]]*\]\]/gi, "")
+    .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1")
+    .replace(/<br\s*\/?>/gi, ",")
+    .replace(/^[!|]\s*/, "")
+    .split("|")
+    .pop()!
+    .trim();
+
+function parseStats(block: string): StatRow | null {
+  const at = block.indexOf("Base Stats");
+  if (at < 0) return null;
+  const lines = block.slice(at).split("\n").slice(1);
+  let i = 0;
+  const skipSeparators = () => {
+    while (i < lines.length && lines[i].trim() === "|-") i++;
+  };
+  skipSeparators();
+  const heads: string[] = [];
+  while (i < lines.length && lines[i].startsWith("!")) heads.push(statCell(lines[i++]));
+  skipSeparators();
+  const cells: string[] = [];
+  while (i < lines.length && lines[i].startsWith("|") && !/^\|[-}]/.test(lines[i])) cells.push(statCell(lines[i++]));
+  if (!heads.length || heads.length !== cells.length) return null;
+  const row: Record<string, number | string | null> = {};
+  heads.forEach((h, k) => {
+    const col = STAT_COLUMNS[h];
+    if (!col) return;
+    if (col === "strong" || col === "weak") {
+      row[col] = cells[k].split(",").map((s) => s.trim()).filter((s) => s && s !== "-" && !/^none$/i.test(s)).join(", ") || null;
+    } else {
+      const num = parseInt(cells[k].replace(/[^\d]/g, ""), 10);
+      row[col] = Number.isFinite(num) ? num : null;
+    }
+  });
+  return Object.values(row).some((v) => typeof v === "number") ? (row as StatRow) : null;
+}
+
 const REF = /<ref\s+name\s*=\s*"?([^">\/]+?)"?\s*\/>|<ref(?:\s+name\s*=\s*"?[^">\/]+?"?)?\s*>([\s\S]*?)<\/ref>|\{\{ref\|((?:[^{}]|\{\{[^{}]*\}\})*)\}\}|\{\{rfc\|([^|}]+)\|([^|}]*)[^}]*\}\}|\{\{rfe\|([^|}]+)\|[^}]*\}\}/g;
 const LINK = /\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/;
 
@@ -264,12 +327,29 @@ async function main() {
   }
   for (let i = 0; i < rows.length; i += 2000) await prisma.evolutionContext.createMany({ data: rows.slice(i, i + 2000) });
 
+  const stats = new Map<string, StatRow & { digimonId: number; game: string }>();
+  for (const [title, text] of Object.entries(pages.pages)) {
+    const self = byTitle.get(norm(title));
+    if (!self) continue;
+    const marks = [...text.matchAll(GAMEPLAY)];
+    marks.forEach((m, k) => {
+      const game = STAT_GAMES.find(([re]) => re.test(m[1]))?.[1];
+      if (!game || stats.has(`${self}:${game}`)) return;
+      const parsed = parseStats(text.slice(m.index, marks[k + 1]?.index ?? text.length));
+      if (parsed) stats.set(`${self}:${game}`, { ...parsed, digimonId: self, game });
+    });
+  }
+  await prisma.gameStats.deleteMany({ where: { game: { in: STAT_GAMES.map(([, g]) => g) } } });
+  const statRows = [...stats.values()];
+  for (let i = 0; i < statRows.length; i += 500) await prisma.gameStats.createMany({ data: statRows.slice(i, i + 500) });
+
   const withContext = await prisma.evolution.count({ where: { contexts: { some: {} } } });
   const total = await prisma.evolution.count();
   console.log(`Obras novas: ${specs.size}. Ligações lidas no Wikimon: ${found.size} (${missing.length} não existiam e foram criadas).`);
   console.log(`Contextos por obra criados: ${rows.length}. Evoluções com obra definida: ${withContext} de ${total}.`);
   if (unknownCodes.size) console.log(`Códigos de episódio sem mapa: ${[...unknownCodes].join(", ")}`);
   console.log(`Digimon citados sem cadastro: ${unknownTargets.size}.`);
+  console.log(`Status base por jogo: ${STAT_GAMES.map(([, g]) => `${g} ${statRows.filter((r) => r.game === g).length}`).join(", ")}.`);
   const topSkipped = [...skipped.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15);
   if (topSkipped.length) console.log(`Referências ignoradas (não são jogo/anime/V-Pet/card): ${topSkipped.map(([t, n]) => `${t} (${n})`).join(", ")}`);
 }
