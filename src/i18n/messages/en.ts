@@ -510,6 +510,11 @@ const en: Record<string, string> = {
   "Nulo": "Null",
   "{n} Digimon": "{n} Digimon",
   "Ver todos os {n} tipos": "See all {n} types",
+  "Fusões": "Fusions",
+  "Variantes": "Variants",
+  "Anos na cronologia": "Years in the timeline",
+  "Você sabia?": "Did you know?",
+  "{n} estreias documentadas": "{n} documented debuts",
 };
 
 export default en;

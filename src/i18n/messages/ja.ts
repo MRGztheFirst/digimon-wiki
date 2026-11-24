@@ -510,6 +510,11 @@ const ja: Record<string, string> = {
   "Nulo": "なし",
   "{n} Digimon": "デジモン{n}体",
   "Ver todos os {n} tipos": "全{n}タイプを見る",
+  "Fusões": "合体",
+  "Variantes": "亜種",
+  "Anos na cronologia": "年表の年数",
+  "Você sabia?": "知ってた？",
+  "{n} estreias documentadas": "初登場が確認されたデジモン：{n}体",
 };
 
 export default ja;

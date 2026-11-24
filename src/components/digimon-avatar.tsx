@@ -21,10 +21,13 @@ const OPTIMIZED = ["https://digi-api.com/images/", "/images/"];
 export function DigimonAvatar({ name, imageUrl, color, className, rounded, stripe, sizes = "64px", priority }: Props) {
   const { t } = useI18n();
   const radius = rounded === "rounded-none" ? "rounded-none" : "rounded-[4px]";
+  const fixed = /^\d+px$/.test(sizes) ? parseInt(sizes, 10) : null;
+  const dims = fixed ? { width: fixed, height: fixed } : { fill: true, sizes };
   return (
     <div className={cn("plate relative overflow-hidden", radius, className)}>
       {imageUrl ? (
-        <Image src={imageUrl} alt={name} fill sizes={sizes} priority={priority} unoptimized={!OPTIMIZED.some((p) => imageUrl.startsWith(p))} className="object-contain p-[6%]" />
+        <Image src={imageUrl} alt={name} {...dims} priority={priority} unoptimized={!OPTIMIZED.some((p) => imageUrl.startsWith(p))}
+          className={cn("object-contain p-[6%]", fixed !== null && "absolute inset-0 h-full w-full")} />
       ) : (
         <div className="flex h-full w-full items-center justify-center" role="img" aria-label={t("{name} — sem imagem cadastrada", { name })}>
           <svg viewBox="0 0 32 32" className="h-1/3 w-1/3 opacity-20" aria-hidden="true">

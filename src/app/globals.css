@@ -126,8 +126,30 @@ h1, h2, h3 { text-wrap: balance; }
   .grow-y { transform-origin: bottom; animation: grow-y 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   @keyframes grow-y { from { transform: scaleY(0); } to { transform: none; } }
 
+  .glow-pulse { animation: glow-pulse 2.6s ease-in-out infinite; }
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 14px -4px var(--glow); }
+    50% { box-shadow: 0 0 30px 0 var(--glow); }
+  }
+
+  .fuse-sign { animation: fuse-sign 2.6s ease-in-out infinite; }
+  @keyframes fuse-sign { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; color: var(--c, var(--fg)); } }
+
+  @keyframes slide-l { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+  @keyframes slide-r { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+
+  @supports (animation-timeline: view()) {
+    .reveal { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+    .reveal-left { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+    .reveal-right { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+    @media (min-width: 768px) {
+      .reveal-left { animation-name: slide-l; }
+      .reveal-right { animation-name: slide-r; }
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .flow, .pop-in, .rise-in, .grow-x, .grow-y { animation: none; }
+    .flow, .pop-in, .rise-in, .grow-x, .grow-y, .glow-pulse, .fuse-sign, .reveal, .reveal-left, .reveal-right { animation: none; }
   }
 
   .scroll-slim::-webkit-scrollbar { width: 8px; height: 8px; }
