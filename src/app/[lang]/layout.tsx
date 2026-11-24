@@ -15,6 +15,7 @@ import "@fontsource/noto-sans-jp/500.css";
 import "../globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { ReportButton } from "@/components/report-button";
 import { I18nProvider } from "@/i18n/client";
 import { LOCALES, LOCALE_INFO, isLocale } from "@/i18n/config";
 import { uiMessages } from "@/i18n/messages";
@@ -55,6 +56,7 @@ export default async function RootLayout({ children, params }: { children: React
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter />
+          <ReportButton />
         </I18nProvider>
         <Analytics />
       </body>

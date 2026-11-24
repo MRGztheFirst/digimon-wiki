@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { LOCALES, LOCALE_COOKIE, LOCALE_INFO, type Locale } from "@/i18n/config";
@@ -44,7 +43,6 @@ function Flag({ locale, className }: { locale: Locale; className?: string }) {
 
 export function LanguageSelect({ onBar = false, className }: { onBar?: boolean; className?: string }) {
   const { locale, t } = useI18n();
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const menuId = useId();
@@ -72,7 +70,9 @@ export function LanguageSelect({ onBar = false, className }: { onBar?: boolean; 
     if (next === locale) return;
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
     document.documentElement.lang = LOCALE_INFO[next].htmlLang;
-    startTransition(() => router.refresh());
+    // Recarrega a página inteira: o layout raiz muda de idioma, e remontá-lo no cliente
+    // perderia o tema salvo (o script do tema só roda no carregamento).
+    startTransition(() => window.location.reload());
   }
 
   function onMenuKey(e: React.KeyboardEvent) {

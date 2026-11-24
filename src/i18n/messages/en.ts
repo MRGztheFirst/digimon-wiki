@@ -532,6 +532,11 @@ const en: Record<string, string> = {
   "Agrupadas pelo Digimon de origem.": "Grouped by the Digimon they start from.",
   "Ver a linha evolutiva nesta obra": "See the evolution line in this title",
   "Mostrando {shown} de {n} Digimon de origem. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.": "Showing {shown} of {n} starting Digimon. To see the rest, open a Digimon's evolution line and pick this title.",
+  "Encontrou algo errado? Avise a gente": "Found something wrong? Let us know",
+  "Correção: {page}": "Correction: {page}",
+  "Página": "Page",
+  "O que está errado?": "What is wrong?",
+  "Qual seria o certo? (se souber, mande a fonte)": "What would be correct? (if you know, include the source)",
 };
 
 export default en;

@@ -532,6 +532,11 @@ const ja: Record<string, string> = {
   "Agrupadas pelo Digimon de origem.": "進化元のデジモンごとにまとめています。",
   "Ver a linha evolutiva nesta obra": "この作品での進化ルートを見る",
   "Mostrando {shown} de {n} Digimon de origem. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.": "進化元{n}体中{shown}体を表示中。残りはデジモンの進化ルートを開き、この作品を選ぶと表示されます。",
+  "Encontrou algo errado? Avise a gente": "間違いを見つけたらお知らせください",
+  "Correção: {page}": "修正: {page}",
+  "Página": "ページ",
+  "O que está errado?": "何が間違っていますか？",
+  "Qual seria o certo? (se souber, mande a fonte)": "正しい内容は？（分かれば出典も）",
 };
 
 export default ja;
