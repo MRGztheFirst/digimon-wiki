@@ -2,6 +2,7 @@ node_modules
 .next
 out
 *.db
+!prisma/dev.db
 *.db-journal
 .env
 .env.local
