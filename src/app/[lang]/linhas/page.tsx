@@ -5,7 +5,6 @@ import { db } from "@/lib/db";
 import { cardSelect } from "@/lib/queries";
 import { Container, PageHeader, Section } from "@/components/ui";
 import { DigimonAvatar } from "@/components/digimon-avatar";
-import { EvoKindBadge } from "@/components/badges";
 import { EvolutionKindGlyph } from "@/components/evolution-kind-glyph";
 import { cn } from "@/lib/utils";
 import { LinePicker } from "./line-picker";
@@ -30,7 +29,7 @@ export default async function LinesIndex({ params }: { params: Promise<{ lang: s
     db.evolution.groupBy({ by: ["kind"], _count: { _all: true } }),
     db.evolution.findMany({
       where: { kind: { not: "normal" }, imported: false },
-      include: { from: { select: cardSelect }, to: { select: cardSelect }, partners: { include: { digimon: { select: { name: true } } } } },
+      include: { from: { select: cardSelect }, to: { select: cardSelect }, partners: { include: { digimon: { select: cardSelect } } } },
       orderBy: { kind: "asc" },
     }),
   ]);
@@ -85,23 +84,73 @@ export default async function LinesIndex({ params }: { params: Promise<{ lang: s
           </div>
         </Section>
 
-        <Section title={t("Evoluções especiais registradas")}>
-          <div className="card divide-y divide-line">
-            {specials.map((e) => (
-              <Link key={e.id} href={`/linhas/${e.to.slug}`} className="flex flex-col gap-2 p-3 text-sm hover:bg-surface-2 sm:flex-row sm:items-center">
-                <span className="flex-1">
-                  <b>{e.from.name}</b>
-                  {e.partners.map((p) => <span key={p.digimon.name}> + <b>{p.digimon.name}</b></span>)}
-                  <span className="text-muted"> → </span>
-                  <b>{e.to.name}</b>
-                  {e.requirements && <span className="text-muted"> · {td(e.requirements)}</span>}
-                </span>
-                <EvoKindBadge kind={e.kind} />
-              </Link>
-            ))}
+        <Section title={t("Evoluções especiais registradas")} description={t("{n} conexões especiais, agrupadas por tipo. Clique em uma para abrir a árvore.", { n: num(specials.length) })}>
+          <div className="space-y-10">
+            {EVOLUTION_KIND_KEYS.filter((k) => k !== "normal").map((k) => {
+              const list = specials.filter((e) => e.kind === k);
+              if (!list.length) return null;
+              const info = EVOLUTION_KINDS[k];
+              return (
+                <div key={k}>
+                  <div className="reveal mb-3 flex items-center gap-3">
+                    <span className="flex h-9 w-12 shrink-0 items-center justify-center rounded-[6px] border border-line bg-surface">
+                      <EvolutionKindGlyph kind={k} color={info.color} className="h-6 w-10" />
+                    </span>
+                    <h3 className="font-display text-lg font-semibold">{t(info.label)}</h3>
+                    <span className="font-mono text-xs text-muted">{num(list.length)}</span>
+                    <span className="h-px flex-1 bg-line" />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {list.map((e) => (
+                      <div key={e.id} className="reveal">
+                      <Link
+                        href={`/linhas/${e.to.slug}`}
+                        className="card group relative flex h-full flex-col gap-3 overflow-hidden p-4 transition-[border-color,transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:border-[var(--kind)] hover:shadow-[0_12px_28px_-12px_var(--kind)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                        style={{ ["--kind" as string]: info.color }}
+                      >
+                        <span className="absolute inset-x-0 top-0 h-[3px] origin-left transition-[height] duration-300 group-hover:h-[5px]" style={{ background: info.color }} />
+                        <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-25" style={{ background: info.color }} />
+                        <span className="flex items-center gap-1.5">
+                          <SpecialMon m={e.from} />
+                          {e.partners.map((p) => (
+                            <span key={p.digimon.id} className="flex items-center gap-1.5">
+                              <span className="fuse-sign font-mono text-sm font-bold text-muted" style={{ ["--c" as string]: info.color }}>+</span>
+                              <SpecialMon m={p.digimon} />
+                            </span>
+                          ))}
+                          <span className="relative mx-1 flex h-3 min-w-6 flex-1 items-center" aria-hidden="true">
+                            <svg className="h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 12">
+                              <line x1="0" y1="6" x2="100" y2="6" stroke={info.color} strokeWidth="2" strokeOpacity="0.3" vectorEffect="non-scaling-stroke" />
+                              <line x1="0" y1="6" x2="100" y2="6" stroke={info.color} strokeWidth="2" vectorEffect="non-scaling-stroke" className="flow [animation-duration:1.6s] group-hover:[animation-duration:0.5s]" />
+                            </svg>
+                            <svg viewBox="0 0 10 12" className="absolute -right-1 h-3 w-2.5 transition-transform duration-300 group-hover:translate-x-1"><path d="M0 0 10 6 0 12z" fill={info.color} /></svg>
+                          </span>
+                          <SpecialMon m={e.to} big />
+                        </span>
+                        {e.requirements && (
+                          <span className="self-start rounded-[4px] px-2 py-1 text-xs font-medium" style={{ background: `color-mix(in oklab, ${info.color} 14%, var(--surface))`, color: `color-mix(in oklab, ${info.color} 60%, var(--fg))` }}>
+                            {td(e.requirements)}
+                          </span>
+                        )}
+                      </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </Section>
       </Container>
     </div>
+  );
+}
+
+function SpecialMon({ m, big }: { m: { name: string; imageUrl: string | null; stage: { color: string } | null }; big?: boolean }) {
+  return (
+    <span className={cn("flex shrink-0 flex-col items-center gap-1 transition-transform duration-300 ease-out motion-reduce:transition-none", big ? "w-[4.75rem] group-hover:-translate-y-0.5 group-hover:scale-110" : "w-16 group-hover:translate-x-1")}>
+      <DigimonAvatar name={m.name} imageUrl={m.imageUrl} color={m.stage?.color} stripe className={big ? "h-[4.75rem] w-[4.75rem]" : "h-14 w-14"} />
+      <span className={cn("w-full truncate text-center text-[11px] leading-tight", big ? "font-semibold text-fg group-hover:text-primary" : "text-muted")}>{m.name}</span>
+    </span>
   );
 }

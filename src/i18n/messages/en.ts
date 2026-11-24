@@ -544,6 +544,7 @@ const en: Record<string, string> = {
   "{name} — {stage}. Clique para abrir a página.": "{name} — {stage}. Click to open the page.",
   "Ampliar imagem": "Enlarge image",
   "Fechar": "Close",
+  "{n} conexões especiais, agrupadas por tipo. Clique em uma para abrir a árvore.": "{n} special connections, grouped by type. Click one to open its tree.",
 };
 
 export default en;

@@ -544,6 +544,7 @@ const ja: Record<string, string> = {
   "{name} — {stage}. Clique para abrir a página.": "{name} — {stage}。クリックでページを開く。",
   "Ampliar imagem": "画像を拡大",
   "Fechar": "閉じる",
+  "{n} conexões especiais, agrupadas por tipo. Clique em uma para abrir a árvore.": "特殊な進化 {n} 件（種類別）。クリックするとツリーを開きます。",
 };
 
 export default ja;
