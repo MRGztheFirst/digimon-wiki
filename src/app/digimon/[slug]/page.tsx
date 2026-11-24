@@ -10,6 +10,8 @@ import { DigimonCard, DigimonChip, EmptyState } from "@/components/digimon-card"
 import { Breadcrumbs, Container, Field, Missing, Section } from "@/components/ui";
 import { MEDIA_KINDS, MEDIA_KIND_KEYS, REVIEW_STATUSES, mediaKindOf, reviewOf } from "@/lib/constants";
 import { padNumber, paragraphs } from "@/lib/utils";
+import { STAT_GAMES } from "@/lib/game-stats";
+import { DigimonStats } from "@/components/digimon-stats";
 import { editorEnabled } from "@/lib/editor";
 import { getI18n } from "@/i18n/server";
 
@@ -39,6 +41,7 @@ async function load(slug: string) {
       base: { select: cardSelect },
       variants: { select: { ...cardSelect, variantKind: true } },
       citations: { include: { source: true } },
+      gameStats: true,
     },
   });
 }
@@ -79,7 +82,8 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
   const groupIds = d.groups.map((g) => g.groupId);
   const evoIds = new Set([...next.map((e) => e.target.id), ...prev.map((e) => e.target.id)]);
   const root = splitCamel(d.name).filter((w) => w.length > 4).pop();
-  const [related, similar] = await Promise.all([
+  const hasStats = d.gameStats.some((s) => STAT_GAMES.some((g) => g.key === s.game));
+  const [related, similar, allStats] = await Promise.all([
     db.digimon.findMany({
       where: {
         id: { notIn: [d.id, ...evoIds] },
@@ -93,6 +97,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
       take: 6,
     }).then((r) => (groupIds.length || typeIds.length || familyIds.length ? r : [])),
     root ? db.digimon.findMany({ where: { name: { contains: root }, id: { not: d.id } }, select: cardSelect, take: 8 }) : Promise.resolve([]),
+    hasStats ? db.gameStats.findMany({ select: { game: true, hp: true, mp: true, atk: true, def: true, spi: true, spd: true, apt: true } }) : Promise.resolve([]),
   ]);
 
   const appearancesByKind = MEDIA_KIND_KEYS.map((k) => [k, d.appearances.filter((a) => mediaKindOf(a.media.kind) === k)] as const);
@@ -104,7 +109,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
   const hasRelated = related.length > 0 || similar.length > 0;
   const toc = ([
     ["visao-geral", t("Visão geral"), true], ["classificacao", t("Classificação"), true], ["caracteristicas", t("Características"), hasChar],
-    ["golpes", t("Golpes e habilidades"), hasAttacks], ["evolucoes", t("Evoluções"), true], ["aparicoes", t("Aparições"), hasApp],
+    ["golpes", t("Golpes e habilidades"), hasAttacks], ["status", t("Status base"), hasStats], ["evolucoes", t("Evoluções"), true], ["aparicoes", t("Aparições"), hasApp],
     ["curiosidades", t("Curiosidades"), hasTrivia], ["relacionados", t("Relacionados"), hasRelated],
   ] as const).filter(([, , show]) => show);
 
@@ -266,6 +271,15 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
                 ) : null}
               </div>}
             </div>
+          </Section>}
+
+          {hasStats && <Section
+            id="status"
+            title={t("Status base")}
+            description={t("Números do nível inicial em cada jogo. Cada jogo tem a sua escala, então compare só dentro do mesmo jogo.")}
+            action={<Link href={`/comparar?d=${d.slug}#status`} className="shrink-0 text-sm font-medium text-accent hover:underline">{t("Comparar status")} →</Link>}
+          >
+            <DigimonStats own={d.gameStats} all={allStats} />
           </Section>}
 
           <Section id="evolucoes" title={t("Evoluções")} icon={<GitBranch size={18} />} action={<Link href={`/linhas/${d.slug}`} className="text-sm font-medium text-accent hover:underline">{t("Árvore completa")} →</Link>}

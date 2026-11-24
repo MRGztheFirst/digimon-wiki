@@ -515,6 +515,15 @@ const en: Record<string, string> = {
   "Anos na cronologia": "Years in the timeline",
   "Você sabia?": "Did you know?",
   "{n} estreias documentadas": "{n} documented debuts",
+  "Números do nível inicial em cada jogo. Cada jogo tem a sua escala, então compare só dentro do mesmo jogo.": "Starting-level numbers in each game. Every game has its own scale, so only compare within the same game.",
+  "Comparar status": "Compare stats",
+  "De 0 a 100 em relação a todos os Digimon com ficha. 50 é a média.": "From 0 to 100 against every Digimon with a stat sheet. 50 is average.",
+  "Mais alto": "Highest",
+  "Mais baixo": "Lowest",
+  "Calculada com os dados de {games}.": "Calculated from {games} data.",
+  "Status base por jogo": "Base stats by game",
+  "Por jogo": "By game",
+  "Nas barras de cada jogo, a cheia é o maior valor daquele jogo.": "In each game's bars, a full bar is that game's highest value.",
 };
 
 export default en;

@@ -7,6 +7,7 @@ import { DigimonAvatar } from "@/components/digimon-avatar";
 import { AttributeBadge, EvoKindBadge, FamilyBadge, Pill, StageBadge } from "@/components/badges";
 import { DigimonPickerNav } from "@/components/digimon-picker-nav";
 import { cn, paramList } from "@/lib/utils";
+import { ELEMENTS, GENERAL, STAT_GAMES, statScorer, type StatKey } from "@/lib/game-stats";
 import { getI18n } from "@/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,51 +25,6 @@ const MATCHUPS: [string, string[]][] = [
   ["Primos dinossauros", ["greymon", "geogreymon", "tyranomon"]],
   ["Royal Knights", ["omegamon", "dukemon", "alphamon", "examon"]],
 ];
-type StatKey = "hp" | "mp" | "atk" | "def" | "spi" | "spd" | "apt";
-const STAT_GAMES: { key: string; name: string; short: string; stats: [StatKey, string, string][] }[] = [
-  {
-    key: "cyber-sleuth",
-    name: "Digimon Story: Cyber Sleuth – Complete Edition",
-    short: "Cyber Sleuth",
-    stats: [["hp", "HP", "Vida"], ["mp", "SP", "Energia"], ["atk", "ATK", "Ataque"], ["def", "DEF", "Defesa"], ["spi", "INT", "Inteligência"], ["spd", "SPD", "Velocidade"]],
-  },
-  {
-    key: "time-stranger",
-    name: "Digimon Story: Time Stranger",
-    short: "Time Stranger",
-    stats: [["hp", "HP", "Vida"], ["mp", "SP", "Energia"], ["atk", "ATK", "Ataque"], ["def", "DEF", "Defesa"], ["spi", "INT", "Inteligência"], ["spd", "SPD", "Velocidade"]],
-  },
-  {
-    key: "sunburst-moonlight",
-    name: "Digimon Story: Sunburst & Moonlight",
-    short: "Sunburst & Moonlight",
-    stats: [["hp", "HP", "Vida"], ["mp", "MP", "Energia"], ["atk", "ATK", "Ataque"], ["def", "DEF", "Defesa"], ["spi", "SPI", "Espírito"], ["spd", "SPD", "Velocidade"], ["apt", "APT", "Aptidão"]],
-  },
-  {
-    key: "super-xros-wars",
-    name: "Digimon Story: Super Xros Wars",
-    short: "Super Xros Wars",
-    stats: [["hp", "HP", "Vida"], ["mp", "MP", "Energia"], ["atk", "STR", "Força"], ["def", "DEF", "Defesa"], ["spi", "INT", "Inteligência"], ["spd", "SPD", "Velocidade"]],
-  },
-];
-const GENERAL: (typeof STAT_GAMES)[number] = {
-  key: "geral",
-  name: "Geral",
-  short: "Geral",
-  stats: [["hp", "HP", "Vida"], ["mp", "MP", "Energia"], ["atk", "ATK", "Ataque"], ["def", "DEF", "Defesa"], ["spi", "INT", "Inteligência"], ["spd", "SPD", "Velocidade"]],
-};
-const ELEMENTS: Record<string, [string, string]> = {
-  Fire: ["Fogo", "#ef4444"],
-  Water: ["Água", "#3b82f6"],
-  Thunder: ["Trovão", "#eab308"],
-  Electric: ["Elétrico", "#eab308"],
-  Wind: ["Vento", "#22c55e"],
-  Earth: ["Terra", "#a16207"],
-  Ore: ["Minério", "#78716c"],
-  Light: ["Luz", "#f59e0b"],
-  Dark: ["Trevas", "#7c3aed"],
-  Fighting: ["Luta", "#f97316"],
-};
 const highlight ="border-primary/60 bg-primary/10 text-fg";
 const pillHit = "border-primary/60! bg-primary/10!";
 
@@ -230,28 +186,14 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
 
   const game = STAT_GAMES.find((g) => g.key === sp.jogo) ?? GENERAL;
   const general = game.key === GENERAL.key;
-  const pools = new Map<string, number[]>();
-  const pool = (g: string, k: StatKey) => {
-    const key = `${g}:${k}`;
-    if (!pools.has(key)) pools.set(key, allStats.filter((s) => s.game === g && s[k] !== null).map((s) => s[k]!));
-    return pools.get(key)!;
-  };
-  const percentile = (g: string, k: StatKey, v: number) => {
-    const vals = pool(g, k);
-    const below = vals.filter((x) => x < v).length;
-    const equal = vals.filter((x) => x === v).length;
-    return vals.length ? ((below + equal / 2) / vals.length) * 100 : 0;
-  };
-  const score = (d: D, k: StatKey) => {
-    const parts = d.gameStats.filter((s) => s[k] !== null).map((s) => percentile(s.game, k, s[k]!));
-    return parts.length ? Math.round(parts.reduce((a, b) => a + b, 0) / parts.length) : null;
-  };
+  const scorer = statScorer(allStats);
+  const score = (d: D, k: StatKey) => scorer.score(d.gameStats, k);
   const statsOf = (d: D) => {
     if (!general) return d.gameStats.find((s) => s.game === game.key);
     if (!d.gameStats.length) return undefined;
     return { hp: score(d, "hp"), mp: score(d, "mp"), atk: score(d, "atk"), def: score(d, "def"), spi: score(d, "spi"), spd: score(d, "spd"), apt: null, strong: null, weak: null };
   };
-  const maxOf = (k: StatKey) => (general ? 100 : Math.max(0, ...pool(game.key, k)));
+  const maxOf = (k: StatKey) => (general ? 100 : scorer.max(game.key, k));
   const withStats = list.filter((d) => statsOf(d));
   const wins = new Map(list.map((d) => [d.id, 0]));
   if (withStats.length > 1) {

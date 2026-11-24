@@ -515,6 +515,15 @@ const ja: Record<string, string> = {
   "Anos na cronologia": "年表の年数",
   "Você sabia?": "知ってた？",
   "{n} estreias documentadas": "初登場が確認されたデジモン：{n}体",
+  "Números do nível inicial em cada jogo. Cada jogo tem a sua escala, então compare só dentro do mesmo jogo.": "各ゲームでの初期レベルの数値。ゲームごとに基準が異なるため、比較は同じゲーム内でのみ行ってください。",
+  "Comparar status": "ステータスを比較",
+  "De 0 a 100 em relação a todos os Digimon com ficha. 50 é a média.": "ステータスが記録されたすべてのデジモンと比べた0〜100の評価。50が平均。",
+  "Mais alto": "最高",
+  "Mais baixo": "最低",
+  "Calculada com os dados de {games}.": "{games}のデータから算出。",
+  "Status base por jogo": "ゲーム別の基礎ステータス",
+  "Por jogo": "ゲーム別",
+  "Nas barras de cada jogo, a cheia é o maior valor daquele jogo.": "各ゲームのバーは、そのゲームの最大値を満タンとしています。",
 };
 
 export default ja;
