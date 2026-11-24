@@ -241,7 +241,7 @@ const ja: Record<string, string> = {
   "Ordenar por": "並び順",
   "Origem do design": "デザインの由来",
   "Os atributos classificam a natureza de cada Digimon como programa. Vantagens entre atributos são regras de cada jogo — consulte a página de cada universo.": "属性は、プログラムとしての各デジモンの性質を分類したもの。属性間の相性はゲームごとのルールなので、各作品のページを参照。",
-  "Os níveis de evolução de um Digimon, do Digiovo ao Supremo. Nomes internacionais e japoneses aparecem como informação complementar. Estágios especiais (Armor e Híbrido) ficam fora da progressão comum.": "デジタマから超究極体までの、デジモンの進化段階。海外名と日本語名は補足情報として表示する。特殊な世代（アーマー体とハイブリッド体）は通常の進化系統に含まれない。",
+  "Os níveis de evolução de um Digimon, do Digiovo ao Mega. Nomes internacionais e japoneses aparecem como informação complementar. Estágios especiais (Armor, Híbrido e Supremo) ficam fora da progressão comum.": "デジタマから究極体までの、デジモンの進化段階。海外名と日本語名は補足情報として表示する。特殊な世代（アーマー体、ハイブリッド体、超究極体）は通常の進化系統に含まれない。",
   "Outra": "その他",
   "Outra mídia": "その他のメディア",
   "Outras formas de evolução especial.": "その他の特殊進化。",
@@ -508,6 +508,8 @@ const ja: Record<string, string> = {
   "Gelo": "氷",
   "Aço": "鋼",
   "Nulo": "なし",
+  "{n} Digimon": "デジモン{n}体",
+  "Ver todos os {n} tipos": "全{n}タイプを見る",
 };
 
 export default ja;

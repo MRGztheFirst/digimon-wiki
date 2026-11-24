@@ -22,7 +22,38 @@ const CHAIN = ["koromon", "agumon", "greymon", "metalgreymon", "wargreymon"];
 const KNIGHTS = ["omegamon", "dukemon", "alphamon", "examon", "magnamon", "ulforce-v-dramon", "jesmon", "gankoomon"];
 const DUEL = ["agumon", "gabumon"];
 const FUSION = ["xv-mon", "stingmon", "paildramon"];
-const SHOWCASE = [...new Set([...WALL, ...CHAIN, ...KNIGHTS, ...DUEL, ...FUSION])];
+const STAIR: Record<string, string> = {
+  digiovo: "digitama", "em-treinamento-1": "botamon", "em-treinamento-2": "koromon", novato: "agumon",
+  campeao: "greymon", perfeito: "metalgreymon", mega: "wargreymon",
+};
+const SHOWCASE = [...new Set([...WALL, ...CHAIN, ...KNIGHTS, ...DUEL, ...FUSION, ...Object.values(STAIR)])];
+
+function splitName(name: string): [string, string | null] {
+  const m = name.match(/^(.*?)\s*\((.*)\)$/);
+  return m ? [m[1], m[2]] : [name, null];
+}
+
+function TaxonRow({ href, color, share, count, icon, title, sub }: {
+  href: string; color: string; share: number; count: string; icon: React.ReactNode; title: string; sub?: string | null;
+}) {
+  return (
+    <Link href={href} style={{ "--tint": `color-mix(in oklab, ${color} 10%, transparent)` } as React.CSSProperties}
+      className="group flex items-center gap-3 border-b border-line/70 px-1.5 py-2 transition-colors hover:bg-(--tint)">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110"
+        style={{ background: `color-mix(in oklab, ${color} 18%, var(--surface))` }}>
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block truncate text-sm font-medium group-hover:text-primary">{title}</span>
+        {sub && <span className="block truncate text-[11px] text-muted">{sub}</span>}
+      </span>
+      <span className="h-1 w-14 shrink-0 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
+        <span className="grow-x block h-full rounded-full" style={{ width: `${Math.max(4, share * 100)}%`, background: color }} />
+      </span>
+      <span className="w-9 text-right font-mono text-xs tabular-nums text-muted">{count}</span>
+    </Link>
+  );
+}
 
 
 export default async function Home() {
@@ -47,6 +78,9 @@ export default async function Home() {
   const lines = POPULAR_LINES.map((s) => lineRoots.find((d) => d.slug === s)).filter((d): d is NonNullable<typeof d> => !!d);
   const quickLinks = QUICK.map((s) => quick.find((q) => q.slug === s)).filter((q): q is NonNullable<typeof q> => !!q);
   const mainStages = stages.filter((s) => !s.isSpecial);
+  const maxAttr = Math.max(1, ...attributes.map((a) => a._count.digimon));
+  const maxFamily = Math.max(1, ...families.map((f) => f._count.digimon));
+  const maxType = Math.max(1, ...types.map((ty) => ty._count.digimon));
   const pick = (slug: string) => showcase.find((m) => m.slug === slug);
   const picks = (slugs: string[]) => slugs.map(pick).filter((m): m is NonNullable<typeof m> => !!m);
   const explore: ExploreData = {
@@ -153,21 +187,36 @@ export default async function Home() {
         </Section>
 
         <Section title={t("Estágios evolutivos")} action={<SeeAll href="/estagios" />}>
-          <div className="scroll-slim overflow-x-auto pb-2">
-            <ol className="flex min-w-max lg:min-w-0">
-              {mainStages.map((s, i) => (
-                <li key={s.id} className="w-36 shrink-0 lg:w-auto lg:flex-1">
-                  <Link href={`/estagios/${s.slug}`} className="group block pr-4">
-                    <div className="flex items-center">
-                      <span className="h-3 w-3 shrink-0 border-2 border-bg outline outline-1 outline-line" style={{ background: s.color }} />
-                      {i < mainStages.length - 1 && <span className="h-px flex-1 bg-line" />}
-                    </div>
-                    <div className="mt-3 font-display text-[17px] font-semibold group-hover:text-primary">{ln(s)}</div>
-                    <div className="font-jp text-xs text-muted">{locale === "ja" ? s.romaji : s.nameJp}</div>
-                    <div className="mt-1 text-xs text-muted">{s.nameEn?.split(" /")[0]} · {s._count.digimon}</div>
-                  </Link>
-                </li>
-              ))}
+          <div className="scroll-slim -mx-4 -mt-3 overflow-x-auto px-4 pb-2 pt-3 md:mx-0 md:px-0">
+            <ol className="grid min-w-[46rem] items-end gap-1.5" style={{ gridTemplateColumns: `repeat(${mainStages.length}, minmax(0, 1fr))` }}>
+              {mainStages.map((s, i) => {
+                const face = pick(STAIR[s.slug] ?? "");
+                return (
+                  <li key={s.id} className="h-full">
+                    <Link href={`/estagios/${s.slug}`} className="group flex h-full flex-col justify-end">
+                      {face ? (
+                        <span className="pop-in mx-auto mb-2 block w-[72%] transition-transform duration-300 group-hover:-translate-y-1.5" style={{ animationDelay: `${300 + i * 90}ms` }}>
+                          <DigimonAvatar name={face.name} imageUrl={face.imageUrl} sizes="96px" className="aspect-square w-full rounded-full! ring-2 ring-surface" />
+                        </span>
+                      ) : (
+                        <span className="pop-in mx-auto mb-2 flex aspect-square w-[72%] items-center justify-center rounded-full border-2 border-dashed font-display text-xl font-semibold text-muted"
+                          style={{ borderColor: s.color, animationDelay: `${300 + i * 90}ms` }}>?</span>
+                      )}
+                      <span className="grow-y relative block rounded-t-[8px] border-t-[3px] px-2.5 pt-2 transition-[filter] duration-200 group-hover:brightness-125"
+                        style={{
+                          height: `${3 + i * 1.15}rem`,
+                          borderColor: s.color,
+                          background: `linear-gradient(to bottom, color-mix(in oklab, ${s.color} 34%, var(--surface)), color-mix(in oklab, ${s.color} 8%, var(--surface)))`,
+                          animationDelay: `${i * 90}ms`,
+                        }}>
+                        <span className="font-mono text-sm font-semibold tabular-nums">{fmt(s._count.digimon)}</span>
+                      </span>
+                      <span className="mt-2.5 block min-h-10 font-display text-sm font-semibold leading-tight group-hover:text-primary">{ln(s)}</span>
+                      <span className="block truncate text-[11px] text-muted">{locale === "ja" ? s.romaji : s.nameJp} · {s.nameEn?.split(" /")[0]}</span>
+                    </Link>
+                  </li>
+                );
+              })}
             </ol>
           </div>
           <p className="mt-4 text-sm text-muted">
@@ -182,40 +231,45 @@ export default async function Home() {
         <div className="grid gap-16 lg:grid-cols-3">
           <Section title={t("Atributos")} action={<SeeAll href="/atributos" />}>
             <ul>
-              {attributes.map((a) => (
-                <li key={a.id}>
-                  <Link href={`/atributos/${a.slug}`} className="group flex items-center gap-3 border-b border-line/70 py-2.5 text-sm">
-                    <span className="flex w-6 justify-center">{a.slug === "no-data" ? <span className="h-px w-3 bg-muted" /> : <AttributeIcon slug={a.slug} name={ln(a)} size={22} />}</span>
-                    <span className="flex-1 group-hover:text-primary">{ln(a)}</span>
-                    <span className="font-mono text-xs text-muted">{a._count.digimon}</span>
-                  </Link>
-                </li>
-              ))}
+              {attributes.map((a, i) => {
+                const [main, sub] = splitName(ln(a));
+                return (
+                  <li key={a.id} className="rise-in" style={{ animationDelay: `${i * 40}ms` }}>
+                    <TaxonRow href={`/atributos/${a.slug}`} color={a.color} share={a._count.digimon / maxAttr} count={fmt(a._count.digimon)}
+                      icon={a.slug === "no-data" ? <span className="h-0.5 w-3 rounded-full bg-muted" /> : <AttributeIcon slug={a.slug} name={main} size={22} />}
+                      title={main} sub={sub} />
+                  </li>
+                );
+              })}
             </ul>
           </Section>
           <Section title={t("Famílias")} action={<SeeAll href="/familias" />}>
             <ul>
-              {families.map((f) => (
-                <li key={f.id}>
-                  <Link href={`/familias/${f.slug}`} className="group flex items-center gap-3 border-b border-line/70 py-2.5 text-sm">
-                    <FamilyIcon slug={f.slug} name={ln(f)} size={22} />
-                    <span className="flex-1 group-hover:text-primary">{ln(f)}</span>
-                    <span className="font-mono text-xs text-muted">{f._count.digimon}</span>
-                  </Link>
+              {families.map((f, i) => (
+                <li key={f.id} className="rise-in" style={{ animationDelay: `${i * 40}ms` }}>
+                  <TaxonRow href={`/familias/${f.slug}`} color={f.color} share={f._count.digimon / maxFamily} count={fmt(f._count.digimon)}
+                    icon={<FamilyIcon slug={f.slug} name={ln(f)} size={24} className="rounded-[3px]" />} title={ln(f)} sub={f.abbr} />
                 </li>
               ))}
             </ul>
           </Section>
           <Section title={t("Tipos")} action={<SeeAll href="/tipos" />}>
-            <p className="text-[15px] leading-loose">
-              {types.map((ty, i) => (
-                <span key={ty.id}>
-                  {i > 0 && <span className="text-line"> · </span>}
-                  <Link href={`/tipos/${ty.slug}`} className="hover:text-primary">{ln(ty)}</Link>
-                  <sup className="ml-0.5 font-mono text-[9px] text-muted">{ty._count.digimon}</sup>
-                </span>
-              ))}
-            </p>
+            <ul className="flex flex-wrap gap-2">
+              {types.map((ty, i) => {
+                const heat = ty._count.digimon / maxType;
+                return (
+                  <li key={ty.id} className="rise-in" style={{ animationDelay: `${i * 30}ms` }}>
+                    <Link href={`/tipos/${ty.slug}`} title={t("{n} Digimon", { n: fmt(ty._count.digimon) })}
+                      className="group flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary"
+                      style={{ borderColor: `color-mix(in oklab, var(--primary) ${Math.round(15 + heat * 45)}%, var(--line))`, background: `color-mix(in oklab, var(--primary) ${Math.round(4 + heat * 16)}%, var(--surface))` }}>
+                      <span className="leading-none group-hover:text-primary">{ln(ty)}</span>
+                      <span className="flex h-[18px] min-w-[22px] items-center justify-center rounded-full bg-surface/70 px-1.5 font-mono text-[10px] leading-none tabular-nums text-muted">{ty._count.digimon}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <Link href="/tipos" className="mt-5 inline-block text-sm font-medium text-accent hover:underline">{t("Ver todos os {n} tipos", { n: fmt(nTypes) })} →</Link>
           </Section>
         </div>
 

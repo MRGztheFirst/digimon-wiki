@@ -17,8 +17,8 @@ export const stages = [
     description: "Estágio em que o Digimon atinge uma forma completa e muito poderosa." },
   { slug: "mega", name: "Mega", nameEn: "Mega / Ultimate", nameJp: "究極体", romaji: "Kyūkyokutai", order: 60, color: "#a855f7",
     description: "O estágio mais alto da linha evolutiva padrão. Inclui formas de modo (Mode Change), Burst Mode e variantes X-Antibody." },
-  { slug: "supremo", name: "Supremo", nameEn: "Super Ultimate / Ultra", nameJp: "超究極体", romaji: "Chōkyūkyokutai", order: 70, color: "#6366f1",
-    description: "Classificação que ultrapassa o estágio Mega, usada para poucos Digimon em obras específicas." },
+  { slug: "supremo", name: "Supremo", nameEn: "Super Ultimate / Ultra", nameJp: "超究極体", romaji: "Chōkyūkyokutai", order: 70, isSpecial: true, color: "#6366f1",
+    description: "Termo usado só em algumas obras, como o mangá Digimon Adventure V-Tamer 01 e certos jogos, para formas acima do Mega. Na classificação oficial esses Digimon são Mega, por isso o estágio fica vazio aqui." },
 ];
 
 export const attributes = [

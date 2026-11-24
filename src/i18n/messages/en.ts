@@ -241,7 +241,7 @@ const en: Record<string, string> = {
   "Ordenar por": "Sort by",
   "Origem do design": "Design origin",
   "Os atributos classificam a natureza de cada Digimon como programa. Vantagens entre atributos são regras de cada jogo — consulte a página de cada universo.": "Attributes classify each Digimon's nature as a program. Advantages between attributes are rules of each game — check each universe's page.",
-  "Os níveis de evolução de um Digimon, do Digiovo ao Supremo. Nomes internacionais e japoneses aparecem como informação complementar. Estágios especiais (Armor e Híbrido) ficam fora da progressão comum.": "A Digimon's evolution levels, from Digi-Egg to Super Ultimate. International and Japanese names appear as extra information. Special levels (Armor and Hybrid) are outside the regular progression.",
+  "Os níveis de evolução de um Digimon, do Digiovo ao Mega. Nomes internacionais e japoneses aparecem como informação complementar. Estágios especiais (Armor, Híbrido e Supremo) ficam fora da progressão comum.": "A Digimon's evolution levels, from Digi-Egg to Mega. International and Japanese names appear as extra information. Special levels (Armor, Hybrid and Super Ultimate) are outside the regular progression.",
   "Outra": "Other",
   "Outra mídia": "Other media",
   "Outras formas de evolução especial.": "Other kinds of special evolution.",
@@ -508,6 +508,8 @@ const en: Record<string, string> = {
   "Gelo": "Ice",
   "Aço": "Steel",
   "Nulo": "Null",
+  "{n} Digimon": "{n} Digimon",
+  "Ver todos os {n} tipos": "See all {n} types",
 };
 
 export default en;

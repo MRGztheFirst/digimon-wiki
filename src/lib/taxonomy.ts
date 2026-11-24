@@ -7,7 +7,7 @@ export const TAXONOMIES = {
     title: "Estágios evolutivos",
     singular: "Estágio",
     filterKey: "estagio",
-    intro: "Os níveis de evolução de um Digimon, do Digiovo ao Supremo. Nomes internacionais e japoneses aparecem como informação complementar. Estágios especiais (Armor e Híbrido) ficam fora da progressão comum.",
+    intro: "Os níveis de evolução de um Digimon, do Digiovo ao Mega. Nomes internacionais e japoneses aparecem como informação complementar. Estágios especiais (Armor, Híbrido e Supremo) ficam fora da progressão comum.",
   },
   atributos: {
     title: "Atributos",
