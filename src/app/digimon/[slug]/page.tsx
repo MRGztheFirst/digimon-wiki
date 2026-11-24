@@ -122,7 +122,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
           <Breadcrumbs items={[["/digimon", t("Enciclopédia")], [null, d.name]]} />
           <div className="grid gap-8 md:grid-cols-[minmax(0,22rem)_1fr] md:items-end">
             <div>
-              <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe className="aspect-square w-full max-w-[22rem]" />
+              <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe sizes="352px" priority className="aspect-square w-full max-w-[22rem]" />
             </div>
             <div className="min-w-0">
               <div className="label">{t("Nº")} {padNumber(d.number).slice(1)}{d.stage ? ` · ${ln(d.stage)}` : ""}</div>

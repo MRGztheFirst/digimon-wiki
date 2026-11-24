@@ -10,7 +10,7 @@ export async function DigimonCard({ d, className, extra }: { d: CardDigimon; cla
   const attribute = d.attribute && t(d.attribute.name).split(" (")[0];
   return (
     <Link href={`/digimon/${d.slug}`} className={cn("group flex flex-col", className)}>
-      <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe className="aspect-square w-full transition-[filter] duration-200 group-hover:brightness-[0.96]" />
+      <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe sizes="(min-width: 1024px) 200px, (min-width: 640px) 30vw, 50vw" className="aspect-square w-full transition-[filter] duration-200 group-hover:brightness-[0.96]" />
       <div className="flex flex-1 flex-col pt-2.5">
         <div className="flex items-baseline justify-between gap-2">
           <span className="truncate font-display text-[15px] font-semibold leading-tight group-hover:text-primary">{d.name}</span>

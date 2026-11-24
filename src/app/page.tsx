@@ -97,7 +97,7 @@ export default async function Home() {
 
           {spot && (
             <Link href={`/digimon/${spot.slug}`} className="group flex max-w-xl gap-5 rounded-[10px] border border-line bg-bg p-4 transition-colors hover:border-primary/60 lg:max-w-none">
-              <DigimonAvatar name={spot.name} imageUrl={spot.imageUrl} color={spot.stage?.color} className="aspect-square w-36 shrink-0 sm:w-44" />
+              <DigimonAvatar name={spot.name} imageUrl={spot.imageUrl} color={spot.stage?.color} sizes="176px" priority className="aspect-square w-36 shrink-0 sm:w-44" />
               <div className="min-w-0 self-center">
                 <div className="label">{t("Digimon em destaque")}</div>
                 <h2 className="mt-1 text-2xl font-bold tracking-tight group-hover:text-primary">{spot.name}</h2>
@@ -127,7 +127,7 @@ export default async function Home() {
           <div className="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-5 lg:grid-cols-10">
             {lines.map((d) => (
               <Link key={d.id} href={`/linhas/${d.slug}`} className="group">
-                <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe className="aspect-square w-full" />
+                <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe sizes="(min-width: 640px) 120px, 33vw" className="aspect-square w-full" />
                 <div className="mt-2 truncate text-sm font-medium group-hover:text-primary">{d.name}</div>
                 <div className="font-mono text-[10.5px] text-muted">{t("{n} conexões", { n: d._count.evolutionsFrom + d._count.evolutionsTo })}</div>
               </Link>

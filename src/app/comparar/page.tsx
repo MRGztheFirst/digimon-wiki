@@ -331,7 +331,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
       </Link>
       {wide ? (
         <Link href={`/digimon/${d.slug}`} className="flex flex-1 items-center gap-4 p-4 sm:gap-5 sm:p-5">
-          <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} className="aspect-square w-28 shrink-0 sm:w-36" />
+          <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} sizes="144px" className="aspect-square w-28 shrink-0 sm:w-36" />
           <div className="min-w-0 flex-1 pr-5">
             <div className="truncate font-display text-xl font-bold tracking-tight group-hover:text-primary">{d.name}</div>
             {d.nameJp && <div className="truncate font-jp text-xs text-muted">{d.nameJp}</div>}
@@ -344,7 +344,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
         </Link>
       ) : (
         <Link href={`/digimon/${d.slug}`} className="flex flex-1 flex-col items-center p-3 pt-4 text-center">
-          <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} className="aspect-square w-full max-w-32" />
+          <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} sizes="128px" className="aspect-square w-full max-w-32" />
           <div className="mt-2.5 w-full truncate font-display text-[15px] font-bold tracking-tight group-hover:text-primary">{d.name}</div>
           {d.nameJp && <div className="w-full truncate font-jp text-[11px] text-muted">{d.nameJp}</div>}
           <div className="mt-2.5 flex flex-wrap justify-center gap-1.5">

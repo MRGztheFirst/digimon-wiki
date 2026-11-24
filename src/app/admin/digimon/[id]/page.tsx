@@ -53,7 +53,7 @@ export default async function EditDigimon({ params, searchParams }: { params: Pr
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Imagem" description="Envie uma imagem oficial ou de referência (até 5 MB). Informe o crédito.">
           <div className="flex gap-4">
-            <DigimonAvatar name={d.name} imageUrl={d.imageUrl} className="h-24 w-24 shrink-0" />
+            <DigimonAvatar name={d.name} imageUrl={d.imageUrl} sizes="96px" className="h-24 w-24 shrink-0" />
             <form action={uploadImage} className="flex-1 space-y-2">
               <input type="hidden" name="id" value={d.id} />
               <input type="file" name="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="block w-full text-sm file:mr-3 file:rounded-[4px] file:border-0 file:bg-surface-2 file:px-3 file:py-2 file:text-sm file:text-fg" />
