@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { AlertTriangle, ArrowLeft, ArrowRight, BookMarked, GitBranch, Info, Pencil, Scale, Sparkles, Swords, Tv } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, BookMarked, ChevronDown, ChevronUp, GitBranch, Info, Pencil, Scale, Sparkles, Swords, Tv } from "lucide-react";
 import { db } from "@/lib/db";
 import { cardSelect } from "@/lib/queries";
 import { DigimonAvatar } from "@/components/digimon-avatar";
@@ -13,7 +13,8 @@ import { padNumber, paragraphs } from "@/lib/utils";
 import { editorEnabled } from "@/lib/editor";
 import { getI18n } from "@/i18n/server";
 
-const ctxInclude = { include: { media: { select: { slug: true, name: true, nameJp: true, kind: true } } } } as const;
+const PLAIN_PREVIEW = 12;
+const ctxInclude ={ include: { media: { select: { slug: true, name: true, nameJp: true, kind: true } } } } as const;
 
 async function load(slug: string) {
   return db.digimon.findUnique({
@@ -269,7 +270,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ slug: 
 
           <Section id="evolucoes" title={t("Evoluções")} icon={<GitBranch size={18} />} action={<Link href={`/linhas/${d.slug}`} className="text-sm font-medium text-accent hover:underline">{t("Árvore completa")} →</Link>}
 >
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-4">
               <EvoColumn title={t("Evolui a partir de")} icon={<ArrowLeft size={16} />} items={prev} self={d.name} direction="prev" />
               <EvoColumn title={t("Pode evoluir para")} icon={<ArrowRight size={16} />} items={next} self={d.name} direction="next" />
             </div>
@@ -348,52 +349,89 @@ async function EvoColumn({ title, icon, items, self, direction }: {
   const { t, td, ln } = await getI18n();
   const curated = items.filter((e) => !e.imported);
   const listed = items.filter((e) => e.imported);
+  const plain = listed.filter((e) => e.kind === "normal" && !e.requirements);
+  const annotated = listed.filter((e) => e.kind !== "normal" || e.requirements);
+  const toggle = "cursor-pointer rounded-full border border-dashed border-line px-2 py-0.5 text-[11px] font-medium text-muted transition-colors hover:border-primary/60 hover:text-primary peer-focus-visible:border-primary peer-focus-visible:text-primary";
+  const expand = "mt-2 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[4px] border border-dashed border-line py-1.5 text-xs font-medium text-muted transition-colors hover:border-primary/60 hover:text-primary peer-focus-visible:border-primary peer-focus-visible:text-primary";
   return (
     <div className="card flex flex-col p-5">
-      <h3 className="mb-3 flex items-center gap-2 font-semibold"><span className="text-primary">{icon}</span>{title}</h3>
+      <h3 className="mb-3 flex items-center gap-2 font-semibold">
+        <span className="text-primary">{icon}</span>{title}
+        {items.length > 0 && <span className="ml-auto font-mono text-xs font-normal text-muted">{items.length}</span>}
+      </h3>
       {items.length === 0 && <Missing>{t("Nenhuma evolução cadastrada.")}</Missing>}
       {listed.length > 0 && (
         <div className={curated.length ? "order-last mt-4 border-t border-line pt-4" : ""}>
-          <ul className="flex flex-wrap gap-1.5">
-            {listed.map((e) => (
-              <li key={`${e.id}-${e.target.id}`} className="flex items-center gap-1.5">
-                <DigimonChip d={e.target} size="sm" />
-                {e.kind !== "normal" && <EvoKindBadge kind={e.kind} />}
-                {e.requirements && <span className="max-w-56 text-[11px] text-muted">{td(e.requirements)}</span>}
-              </li>
-            ))}
-          </ul>
+          {plain.length > 0 && (
+            <div className="group">
+              {plain.length > PLAIN_PREVIEW + 2 && <input type="checkbox" id={`${direction}-plain`} className="peer sr-only" />}
+              <ul className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
+                {plain.map((e, i) => (
+                  <li key={`${e.id}-${e.target.id}`} className={plain.length > PLAIN_PREVIEW + 2 && i >= PLAIN_PREVIEW ? "hidden min-w-0 group-has-checked:block" : "min-w-0"}>
+                    <DigimonChip d={e.target} size="sm" className="w-full" />
+                  </li>
+                ))}
+              </ul>
+              {plain.length > PLAIN_PREVIEW + 2 && (
+                <>
+                  <label htmlFor={`${direction}-plain`} className={`${expand} group-has-checked:hidden`}>{t("Ver mais {n}", { n: plain.length - PLAIN_PREVIEW })}<ChevronDown size={14} aria-hidden="true" /></label>
+                  <label htmlFor={`${direction}-plain`} className={`${expand} hidden group-has-checked:flex`}>{t("Ver menos")}<ChevronUp size={14} aria-hidden="true" /></label>
+                </>
+              )}
+            </div>
+          )}
+          {annotated.length > 0 && (
+            <ul className={`grid gap-x-4 gap-y-1.5 md:grid-cols-2 ${plain.length ? "mt-3" : ""}`}>
+              {annotated.map((e) => (
+                <li key={`${e.id}-${e.target.id}`} className="flex items-center gap-2.5">
+                  <span className="shrink-0"><DigimonChip d={e.target} size="sm" /></span>
+                  {e.kind !== "normal" && <span className="shrink-0"><EvoKindBadge kind={e.kind} /></span>}
+                  {e.requirements && <span className="line-clamp-2 min-w-0 text-[11px] leading-snug text-muted" title={td(e.requirements)}>{td(e.requirements)}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
       {curated.length > 0 && (
-        <ul className="space-y-3">
-          {curated.map((e) => (
-            <li key={`${e.id}-${e.target.id}`} className="rounded-[4px] border border-line p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <DigimonChip d={e.target} size="sm" />
-                {e.others.length > 0 && (
-                  <span className="text-xs text-muted">
-                    {direction === "next" ? t("junto com {names}", { names: e.others.map((o) => o.name).join(", ") }) : `+ ${e.others.map((o) => o.name).join(" + ")} → ${self}`}
-                  </span>
-                )}
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {e.kind !== "normal" && <EvoKindBadge kind={e.kind} />}
-              </div>
-              {e.requirements && <div className="mt-1.5 text-xs"><span className="text-muted">{t("Requisito:")} </span>{td(e.requirements)}</div>}
-              {e.notes && <div className="mt-1 text-xs text-muted">{td(e.notes)}</div>}
-              {e.contexts.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {e.contexts.map((c) => (
-                    <Link key={c.media.slug} href={`/universos/${c.media.slug}`} title={c.requirements ? t("Requisitos: {req}", { req: td(c.requirements) }) : undefined}
-                      className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted hover:text-fg">
-                      {ln(c.media)}{c.status === "unconfirmed" ? " (?)" : ""}
-                    </Link>
-                  ))}
+        <ul className="grid gap-2.5 md:grid-cols-2">
+          {curated.map((e) => {
+            const key = `${direction}-${e.id}-${e.target.id}`;
+            const hidden = e.contexts.length > 5 ? e.contexts.length - 3 : 0;
+            return (
+              <li key={key} className="rounded-[6px] border border-line bg-surface-2/25 p-3 md:odd:last:col-span-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <DigimonChip d={e.target} size="sm" />
+                  {e.kind !== "normal" && <EvoKindBadge kind={e.kind} />}
+                  {e.others.length > 0 && (
+                    <span className="text-xs text-muted">
+                      {direction === "next" ? t("junto com {names}", { names: e.others.map((o) => o.name).join(", ") }) : `+ ${e.others.map((o) => o.name).join(" + ")} → ${self}`}
+                    </span>
+                  )}
                 </div>
-              )}
-            </li>
-          ))}
+                {e.requirements && <div className="mt-2 text-xs"><span className="text-muted">{t("Requisito:")} </span>{td(e.requirements)}</div>}
+                {e.notes && <div className="mt-1.5 text-xs text-muted">{td(e.notes)}</div>}
+                {e.contexts.length > 0 && (
+                  <div className="group mt-2.5 flex flex-wrap items-center gap-1">
+                    {hidden > 0 && <input type="checkbox" id={key} className="peer sr-only" />}
+                    {e.contexts.map((c, i) => (
+                      <Link key={c.media.slug} href={`/universos/${c.media.slug}`}
+                        title={[ln(c.media), c.requirements && t("Requisitos: {req}", { req: td(c.requirements) })].filter(Boolean).join("\n")}
+                        className={`max-w-56 truncate rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted transition-colors hover:text-fg ${hidden && i >= 3 ? "hidden group-has-checked:inline-block" : ""}`}>
+                        {ln(c.media)}{c.status === "unconfirmed" ? " (?)" : ""}
+                      </Link>
+                    ))}
+                    {hidden > 0 && (
+                      <>
+                        <label htmlFor={key} className={`${toggle} group-has-checked:hidden`}>+{t("{n} obras", { n: hidden })}</label>
+                        <label htmlFor={key} className={`${toggle} hidden group-has-checked:inline-block`}>{t("Ver menos")}</label>
+                      </>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

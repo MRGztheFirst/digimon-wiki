@@ -49,11 +49,11 @@ type ChipDigimon = Pick<CardDigimon, "slug" | "name" | "imageUrl"> & {
   attribute?: { color: string } | null;
 };
 
-export function DigimonChip({ d, size = "md", suffix }: { d: ChipDigimon; size?: "sm" | "md"; suffix?: React.ReactNode }) {
+export function DigimonChip({ d, size = "md", suffix, className = "" }: { d: ChipDigimon; size?: "sm" | "md"; suffix?: React.ReactNode; className?: string }) {
   return (
-    <Link href={`/digimon/${d.slug}`} className="inline-flex items-center gap-2 rounded-[4px] border border-line bg-surface py-1 pl-1 pr-3 text-sm transition-colors hover:border-fg/40">
-      <DigimonAvatar name={d.name} imageUrl={d.imageUrl} className={size === "sm" ? "h-7 w-7" : "h-9 w-9"} />
-      <span className="font-medium">{d.name}</span>
+    <Link href={`/digimon/${d.slug}`} title={d.name} className={`inline-flex items-center gap-2 rounded-[4px] border border-line bg-surface py-1 pl-1 pr-3 text-sm transition-colors hover:border-fg/40 ${className}`}>
+      <DigimonAvatar name={d.name} imageUrl={d.imageUrl} className={size === "sm" ? "h-7 w-7 shrink-0" : "h-9 w-9 shrink-0"} />
+      <span className="min-w-0 truncate font-medium">{d.name}</span>
       {suffix}
     </Link>
   );
