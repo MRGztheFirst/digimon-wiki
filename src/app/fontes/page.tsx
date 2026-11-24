@@ -39,15 +39,16 @@ function Marker({ color }: { color: string }) {
 
 export default async function SourcesPage() {
   const { t, td, num } = await getI18n();
-  const [sources, mediaSources, review] = await Promise.all([
-    db.source.findMany({
-      where: { OR: [{ NOT: { title: { startsWith: MEDIA_SOURCE_PREFIX } } }, { title: { in: OWN_SOURCES } }] },
-      include: { _count: { select: { citations: true, evolutions: true, evolutionContexts: true, appearances: true } } },
-      orderBy: { id: "asc" },
-    }),
+  const usage = { _count: { select: { citations: true, evolutions: true, evolutionContexts: true, appearances: true } } } as const;
+  const [sources, own, mediaSources, review] = await Promise.all([
+    db.source.findMany({ where: { NOT: { title: { startsWith: MEDIA_SOURCE_PREFIX } } }, include: usage, orderBy: { id: "asc" } }),
+    db.source.findMany({ where: { title: { in: OWN_SOURCES } }, include: usage }),
     db.source.count({ where: { title: { startsWith: MEDIA_SOURCE_PREFIX, notIn: OWN_SOURCES } } }),
     db.digimon.groupBy({ by: ["reviewStatus"], _count: { _all: true } }),
   ]);
+  const extra = (s: (typeof sources)[number], k: keyof (typeof sources)[number]["_count"]) =>
+    s.kind === "wikimon" && s.title === "Wikimon" ? own.reduce((sum, o) => sum + o._count[k], 0) : 0;
+  const count = (s: (typeof sources)[number], k: keyof (typeof sources)[number]["_count"]) => s._count[k] + extra(s, k);
   const ranked = [...sources].sort((a, b) => KIND_PRIORITY.indexOf(a.kind) - KIND_PRIORITY.indexOf(b.kind) || a.id - b.id);
   const reviewCount = (k: string) => review.find((r) => r.reviewStatus === k)?._count._all ?? 0;
   const term = (s: string) => t(s).replace(/[:：]\s*$/, "");
@@ -154,11 +155,12 @@ export default async function SourcesPage() {
                   <span className="text-right">{t("Uso no banco")}</span>
                 </div>
                 {ranked.map((s, i) => {
+                  const totals = [count(s, "citations"), count(s, "evolutions"), count(s, "evolutionContexts") + count(s, "appearances")];
                   const used = [
-                    t("{n} citações", { n: num(s._count.citations) }),
-                    t("{n} evoluções", { n: num(s._count.evolutions) }),
-                    t("{n} contextos", { n: num(s._count.evolutionContexts + s._count.appearances) }),
-                  ].filter((_, j) => [s._count.citations, s._count.evolutions, s._count.evolutionContexts + s._count.appearances][j] > 0);
+                    t("{n} citações", { n: num(totals[0]) }),
+                    t("{n} evoluções", { n: num(totals[1]) }),
+                    t("{n} contextos", { n: num(totals[2]) }),
+                  ].filter((_, j) => totals[j] > 0);
                   const meta = [...new Set([t(SOURCE_KINDS[s.kind as SourceKind] ?? s.kind), s.publisher && t(s.publisher)])].filter(Boolean).join(" · ");
                   return (
                     <div key={s.id} className="grid gap-2 border-b border-line bg-surface px-4 py-4 last:border-0 sm:grid-cols-[28px_minmax(0,1fr)_170px] sm:gap-4">
