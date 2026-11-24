@@ -16,6 +16,7 @@ const NAV = [
   { href: "/linhas", label: "Linhas evolutivas" },
   { href: "/universos", label: "Universos" },
   { href: "/comparar", label: "Comparar" },
+  { href: "/vantagens", label: "Vantagens" },
   { href: "/curiosidades", label: "Curiosidades" },
 ];
 
