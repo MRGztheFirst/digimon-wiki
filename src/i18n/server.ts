@@ -8,7 +8,21 @@ import contentJa from "./content/ja.json";
 
 const contentMessages: Record<Locale, Messages | undefined> = { pt: undefined, en: contentEn, ja: contentJa };
 
+const requestLocale = cache((): { current: Locale | null } => ({ current: null }));
+
+export function setRequestLocale(value: string) {
+  if (isLocale(value)) requestLocale().current = value;
+}
+
+export async function localeFromParams(params: Promise<{ lang: string }>) {
+  const { lang } = await params;
+  setRequestLocale(lang);
+  return lang;
+}
+
 export const getLocale = cache(async (): Promise<Locale> => {
+  const fixed = requestLocale().current;
+  if (fixed) return fixed;
   const fromCookie = (await cookies()).get(LOCALE_COOKIE)?.value;
   if (isLocale(fromCookie)) return fromCookie;
   return localeFromAcceptLanguage((await headers()).get("accept-language")) ?? DEFAULT_LOCALE;
