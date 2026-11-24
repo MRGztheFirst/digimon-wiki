@@ -524,6 +524,14 @@ const ja: Record<string, string> = {
   "Status base por jogo": "ゲーム別の基礎ステータス",
   "Por jogo": "ゲーム別",
   "Nas barras de cada jogo, a cheia é o maior valor daquele jogo.": "各ゲームのバーは、そのゲームの最大値を満タンとしています。",
+  "Só nesta obra": "この作品のみ",
+  "Digimon de destaque": "注目のデジモン",
+  "Digimon por estágio": "世代別のデジモン",
+  "Regras deste universo": "この世界のルール",
+  "Agrupadas pelo Digimon de origem. O ponto marca as evoluções que, nesta wiki, só existem neste universo.": "進化元のデジモンごとにまとめています。点の付いた進化は、このWikiではこの作品にしか登録されていません。",
+  "Agrupadas pelo Digimon de origem.": "進化元のデジモンごとにまとめています。",
+  "Ver a linha evolutiva nesta obra": "この作品での進化ルートを見る",
+  "Mostrando {shown} de {n} Digimon de origem. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.": "進化元{n}体中{shown}体を表示中。残りはデジモンの進化ルートを開き、この作品を選ぶと表示されます。",
 };
 
 export default ja;

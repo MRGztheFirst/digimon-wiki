@@ -524,6 +524,14 @@ const en: Record<string, string> = {
   "Status base por jogo": "Base stats by game",
   "Por jogo": "By game",
   "Nas barras de cada jogo, a cheia é o maior valor daquele jogo.": "In each game's bars, a full bar is that game's highest value.",
+  "Só nesta obra": "Only in this title",
+  "Digimon de destaque": "Featured Digimon",
+  "Digimon por estágio": "Digimon by level",
+  "Regras deste universo": "Rules of this universe",
+  "Agrupadas pelo Digimon de origem. O ponto marca as evoluções que, nesta wiki, só existem neste universo.": "Grouped by the Digimon they start from. The dot marks evolutions that, in this wiki, only exist in this universe.",
+  "Agrupadas pelo Digimon de origem.": "Grouped by the Digimon they start from.",
+  "Ver a linha evolutiva nesta obra": "See the evolution line in this title",
+  "Mostrando {shown} de {n} Digimon de origem. Para ver o resto, abra a linha evolutiva de um Digimon e escolha esta obra.": "Showing {shown} of {n} starting Digimon. To see the rest, open a Digimon's evolution line and pick this title.",
 };
 
 export default en;
