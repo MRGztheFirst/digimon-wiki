@@ -481,6 +481,8 @@ const ja: Record<string, string> = {
   "{name} ainda não tem status registrados.": "{name}のステータスはまだ登録されていない。",
   "Barra cheia = 100, o topo entre todos os Digimon com ficha.": "バーの最大＝100、記録のある全デジモン中の最高。",
   "Ele não tem ficha em nenhum dos jogos com status: Cyber Sleuth, Time Stranger, Sunburst & Moonlight e Super Xros Wars.": "ステータスのある作品（サイバースルゥース、タイムストレンジャー、サンバースト＆ルナ、超クロスウォーズ）のどれにも登録されていない。",
+  "A escada evolutiva": "進化の階段",
+  "Cada degrau é um estágio, na ordem em que os Digimon evoluem.": "一段ごとに一つの世代。デジモンが進化する順に並んでいます。",
 };
 
 export default ja;

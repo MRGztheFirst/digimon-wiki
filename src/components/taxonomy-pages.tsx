@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Crown } from "lucide-react";
+import { Crown } from "lucide-react";
 import { TAXONOMIES, getTaxonomyTerm, listTaxonomy, type TaxonomyKind } from "@/lib/taxonomy";
 import { searchDigimon } from "@/lib/search";
 import { Container, PageHeader, Pagination, Section } from "./ui";
@@ -28,21 +28,6 @@ export async function TaxonomyIndexPage({ kind }: { kind: TaxonomyKind }) {
     <div>
       <PageHeader crumbs={[[null, tr(t.title)]]} eyebrow={tr("Classificação")} title={tr(t.title)} subtitle={tr(t.intro)} />
       <Container className="space-y-10 py-10">
-        {kind === "estagios" && (
-          <div className="card scroll-slim overflow-x-auto p-5">
-            <div className="flex min-w-max items-center gap-2">
-              {main.map((s, i) => (
-                <span key={s.slug} className="flex items-center gap-2">
-                  {i > 0 && <ArrowRight size={16} className="text-muted" />}
-                  <Link href={`/estagios/${s.slug}`} className="rounded-[4px] border px-3 py-2 text-center transition" style={{ borderColor: `${s.color}66`, background: `${s.color}14` }}>
-                    <div className="text-sm font-semibold">{s.name}</div>
-                    <div className="text-[11px] text-muted">{s.subtitle?.split(" · ")[0]}</div>
-                  </Link>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
         <TermGrid items={main} kind={kind} />
         {special.length > 0 && (
           <Section title={tr("Estágios especiais")} description={tr("Fora da progressão padrão; dependem de mecânicas específicas (Digiovos, Espíritos...).")}>

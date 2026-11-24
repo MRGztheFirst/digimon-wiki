@@ -481,6 +481,8 @@ const en: Record<string, string> = {
   "{name} ainda não tem status registrados.": "{name} has no stats recorded yet.",
   "Barra cheia = 100, o topo entre todos os Digimon com ficha.": "Full bar = 100, the top among all Digimon with a stat sheet.",
   "Ele não tem ficha em nenhum dos jogos com status: Cyber Sleuth, Time Stranger, Sunburst & Moonlight e Super Xros Wars.": "It has no entry in any of the games with stats: Cyber Sleuth, Time Stranger, Sunburst & Moonlight and Super Xros Wars.",
+  "A escada evolutiva": "The evolution ladder",
+  "Cada degrau é um estágio, na ordem em que os Digimon evoluem.": "Each step is a level, in the order Digimon digivolve.",
 };
 
 export default en;
