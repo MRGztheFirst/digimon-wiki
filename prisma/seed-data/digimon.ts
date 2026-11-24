@@ -20,6 +20,7 @@ export type DigimonSeed = {
   first?: string;
   firstYear?: number;
   featured?: boolean;
+  image?: string;
   base?: string;
   variantKind?: string;
   attacks?: AttackSeed[];
@@ -31,7 +32,7 @@ const U = "unconfirmed";
 const O = "official";
 
 export const digimon: DigimonSeed[] = [
-  { slug: "digitama", name: "Digitama", jp: "デジタマ", romaji: "Digitama", other: "Digiovo, Digi-Egg", stage: "digiovo", attr: "no-data",
+  { slug: "digitama", name: "Digitama", jp: "デジタマ", romaji: "Digitama", other: "Digiovo, Digi-Egg", stage: "digiovo", attr: "no-data", image: "/images/digitama.png",
     summary: "O Digiovo é o ovo do qual nascem os Digimon. Nesta wiki, é usado como ponto de partida genérico das linhas evolutivas.",
     meaning: "Junção de \"Digi(tal)\" com \"tama(go)\", ovo em japonês." },
 

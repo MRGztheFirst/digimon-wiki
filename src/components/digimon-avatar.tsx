@@ -16,7 +16,7 @@ type Props = {
   priority?: boolean;
 };
 
-const OPTIMIZED = "https://digi-api.com/images/";
+const OPTIMIZED = ["https://digi-api.com/images/", "/images/"];
 
 export function DigimonAvatar({ name, imageUrl, color, className, rounded, stripe, sizes = "64px", priority }: Props) {
   const { t } = useI18n();
@@ -24,7 +24,7 @@ export function DigimonAvatar({ name, imageUrl, color, className, rounded, strip
   return (
     <div className={cn("plate relative overflow-hidden", radius, className)}>
       {imageUrl ? (
-        <Image src={imageUrl} alt={name} fill sizes={sizes} priority={priority} unoptimized={!imageUrl.startsWith(OPTIMIZED)} className="object-contain p-[6%]" />
+        <Image src={imageUrl} alt={name} fill sizes={sizes} priority={priority} unoptimized={!OPTIMIZED.some((p) => imageUrl.startsWith(p))} className="object-contain p-[6%]" />
       ) : (
         <div className="flex h-full w-full items-center justify-center" role="img" aria-label={t("{name} — sem imagem cadastrada", { name })}>
           <svg viewBox="0 0 32 32" className="h-1/3 w-1/3 opacity-20" aria-hidden="true">

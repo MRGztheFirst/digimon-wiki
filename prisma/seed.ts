@@ -97,6 +97,7 @@ async function main() {
         firstAppearance: d.first,
         firstYear: d.firstYear,
         featured: d.featured ?? false,
+        imageUrl: d.image,
         reviewStatus: "review",
         stageId: stageId.get(d.stage),
         attributeId: d.attr ? attrId.get(d.attr) : undefined,
