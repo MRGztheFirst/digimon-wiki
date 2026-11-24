@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "digi-api.com", pathname: "/images/**" }],
     minimumCacheTTL: 2678400,
+    imageSizes: [128],
+    deviceSizes: [320],
   },
   experimental: {
     serverActions: { bodySizeLimit: "8mb" },
