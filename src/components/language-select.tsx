@@ -70,8 +70,6 @@ export function LanguageSelect({ onBar = false, className }: { onBar?: boolean; 
     if (next === locale) return;
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
     document.documentElement.lang = LOCALE_INFO[next].htmlLang;
-    // Recarrega a página inteira: o layout raiz muda de idioma, e remontá-lo no cliente
-    // perderia o tema salvo (o script do tema só roda no carregamento).
     startTransition(() => window.location.reload());
   }
 

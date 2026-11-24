@@ -537,6 +537,13 @@ const en: Record<string, string> = {
   "Página": "Page",
   "O que está errado?": "What is wrong?",
   "Qual seria o certo? (se souber, mande a fonte)": "What would be correct? (if you know, include the source)",
+  "Tela cheia": "Fullscreen",
+  "Sair da tela cheia": "Exit fullscreen",
+  "Sair da tela cheia (Esc)": "Exit fullscreen (Esc)",
+  "Clique em um Digimon para abrir a página dele. Arraste o fundo para mover a árvore.": "Click a Digimon to open its page. Drag the background to move the tree.",
+  "{name} — {stage}. Clique para abrir a página.": "{name} — {stage}. Click to open the page.",
+  "Ampliar imagem": "Enlarge image",
+  "Fechar": "Close",
 };
 
 export default en;

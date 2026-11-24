@@ -537,6 +537,13 @@ const ja: Record<string, string> = {
   "Página": "ページ",
   "O que está errado?": "何が間違っていますか？",
   "Qual seria o certo? (se souber, mande a fonte)": "正しい内容は？（分かれば出典も）",
+  "Tela cheia": "全画面",
+  "Sair da tela cheia": "全画面を終了",
+  "Sair da tela cheia (Esc)": "全画面を終了（Esc）",
+  "Clique em um Digimon para abrir a página dele. Arraste o fundo para mover a árvore.": "デジモンをクリックするとページを開きます。背景をドラッグするとツリーを動かせます。",
+  "{name} — {stage}. Clique para abrir a página.": "{name} — {stage}。クリックでページを開く。",
+  "Ampliar imagem": "画像を拡大",
+  "Fechar": "閉じる",
 };
 
 export default ja;

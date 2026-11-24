@@ -7,7 +7,6 @@ import { useI18n } from "@/i18n/client";
 
 const REPO_ISSUES = "https://github.com/MRGztheFirst/digimon-wiki/issues/new";
 
-/** Bolinha fixa no canto inferior direito que abre uma issue no GitHub já com a página preenchida. */
 export function ReportButton() {
   const pathname = usePathname();
   const { t } = useI18n();

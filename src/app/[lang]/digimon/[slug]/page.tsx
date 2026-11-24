@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight, BookMarked, ChevronDown, ChevronU
 import { db } from "@/lib/db";
 import { cardSelect } from "@/lib/queries";
 import { DigimonAvatar } from "@/components/digimon-avatar";
+import { ImageZoom } from "@/components/image-zoom";
 import { AttributeBadge, EvoKindBadge, FamilyBadge, Pill, ReviewBadge, StageBadge, StatusBadge } from "@/components/badges";
 import { DigimonCard, DigimonChip, EmptyState } from "@/components/digimon-card";
 import { Breadcrumbs, Container, Field, Missing, Section } from "@/components/ui";
@@ -133,7 +134,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ lang: 
           <Breadcrumbs items={[["/digimon", t("Enciclopédia")], [null, d.name]]} />
           <div className="grid gap-8 md:grid-cols-[minmax(0,22rem)_1fr] md:items-end">
             <div>
-              <DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe sizes="352px" priority className="aspect-square w-full max-w-[22rem]" />
+              <ImageZoom src={d.imageUrl} alt={d.name}><DigimonAvatar name={d.name} imageUrl={d.imageUrl} color={d.stage?.color} stripe sizes="352px" priority className="aspect-square w-full max-w-[22rem]" /></ImageZoom>
             </div>
             <div className="min-w-0">
               <div className="label">{t("Nº")} {padNumber(d.number).slice(1)}{d.stage ? ` · ${ln(d.stage)}` : ""}</div>

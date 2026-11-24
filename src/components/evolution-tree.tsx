@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { ExternalLink, Focus, Info, List, Maximize2, Minus, Network, Plus, RotateCcw, X } from "lucide-react";
+import { ExternalLink, Focus, Info, List, Maximize, Minimize, Minus, Network, Plus, RotateCcw, Scan, X } from "lucide-react";
 import type { GEdge, GraphData, GraphFilters, GNode } from "@/lib/graph-types";
 import { COL_GAP, NODE_H, NODE_W, filterGraph, layoutGraph } from "@/lib/graph-layout";
 import { EVOLUTION_KINDS, MEDIA_KINDS, MEDIA_KIND_KEYS, evoKindOf, mediaKindOf } from "@/lib/constants";
@@ -49,6 +49,32 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
   const [zoom, setZoom] = useState(1);
   const [view, setView] = useState<"tree" | "list">("tree");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [full, setFull] = useState(false);
+  const pan = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
+
+  const toggleFull = () => {
+    if (full) {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      setFull(false);
+    } else {
+      setFull(true);
+      rootRef.current?.requestFullscreen?.().catch(() => {});
+    }
+  };
+  useEffect(() => {
+    if (!full) return;
+    const onChange = () => !document.fullscreenElement && setFull(false);
+    const onKey = (ev: KeyboardEvent) => ev.key === "Escape" && setFull(false);
+    document.addEventListener("fullscreenchange", onChange);
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [full]);
 
   const filters: GraphFilters = { mediaKinds, statuses, kinds, mediaId: null };
   const { nodes, edges } = useMemo(() => filterGraph(graph, filters), [graph, mediaKinds, statuses, kinds]);
@@ -64,11 +90,38 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
       left: Math.max(0, (root.x + NODE_W / 2) * zoom - el.clientWidth / 2),
       top: Math.max(0, (root.y + NODE_H / 2) * zoom - el.clientHeight / 2),
     });
-  }, [graph, view]);
+  }, [graph, view, full]);
 
   useEffect(() => setSelected({ type: "node", id: graph.rootId }), [graph.rootId]);
 
-  const focusId = hover ?? (selected?.type === "node" ? selected.id : null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (ev: WheelEvent) => {
+      if (!ev.ctrlKey) return;
+      ev.preventDefault();
+      setZoom((z) => Math.min(1.6, Math.max(0.4, +(z - Math.sign(ev.deltaY) * 0.1).toFixed(2))));
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [view]);
+
+  const focusId = hover;
+
+  const lanes = useMemo(() => {
+    const bySrcCol = new Map<number, { id: number; y: number }[]>();
+    const srcs = new Set(edges.flatMap((e) => [e.from, ...e.partners]));
+    for (const id of srcs) {
+      const p = pos.get(id);
+      if (p) (bySrcCol.get(p.col) ?? bySrcCol.set(p.col, []).get(p.col)!).push({ id, y: p.y });
+    }
+    const m = new Map<number, number>();
+    for (const list of bySrcCol.values()) {
+      list.sort((a, b) => a.y - b.y);
+      list.forEach((s, i) => m.set(s.id, 14 + (list.length > 1 ? (i / (list.length - 1)) * (COL_GAP - 28) : (COL_GAP - 28) / 2)));
+    }
+    return m;
+  }, [edges, pos]);
   const lineage = useMemo(() => {
     if (focusId == null) return null;
     const nodesSet = new Set([focusId]);
@@ -106,20 +159,36 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
     else next.add(key);
     setter(next);
   };
+  const go = (media: string | null) => startNav(() => router.push(media ? `/linhas/${slug}?midia=${media}` : `/linhas/${slug}`, { scroll: false }));
+  const defaultMedia = DEFAULT_MEDIA();
+  const dirty =
+    !!current ||
+    zoom !== 1 ||
+    statuses.size !== 3 ||
+    kinds.size !== Object.keys(EVOLUTION_KINDS).length ||
+    mediaKinds.size !== defaultMedia.size ||
+    [...defaultMedia].some((k) => !mediaKinds.has(k));
   const reset = () => {
     setMediaKinds(DEFAULT_MEDIA());
     setStatuses(new Set(["official", "media", "unconfirmed"]));
     setKinds(new Set(Object.keys(EVOLUTION_KINDS)));
+    setZoom(1);
+    if (current) go(null);
   };
-  const go = (media: string | null) => startNav(() => router.push(media ? `/linhas/${slug}?midia=${media}` : `/linhas/${slug}`, { scroll: false }));
 
   const selNode = selected?.type === "node" ? byId.get(selected.id) : undefined;
   const selEdge = selected?.type === "edge" ? graph.edges.find((e) => e.id === selected.id) : undefined;
   const hiddenCount = graph.nodes.length - nodes.length;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-      <div className="min-w-0 space-y-3">
+    <div
+      ref={rootRef}
+      className={cn(
+        "grid gap-4 lg:grid-cols-[1fr_340px]",
+        full && "fixed inset-0 z-50 overflow-auto bg-bg p-3 sm:p-4 lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden",
+      )}
+    >
+      <div className={cn("min-w-0", full ? "flex min-h-0 flex-col gap-3" : "space-y-3")}>
         <div className={cn("card space-y-3 p-4", navigating && "opacity-70")}>
           {choices.length > 0 && (
             <FilterRow label={t("Ver a árvore de")}>
@@ -174,22 +243,46 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
                   setZoom(Math.max(0.4, Math.min(1, (w - 32) / layout.width)));
                 }}
               >
-                <Maximize2 size={15} />
+                <Scan size={15} />
               </button>
             </div>
           )}
-          <button className="btn btn-ghost ml-auto py-1.5 text-xs" onClick={reset}>
-            <RotateCcw size={14} /> {t("Limpar filtros")}
-          </button>
+          <div className="ml-auto flex items-center gap-1">
+            <button className="btn btn-ghost py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-40" onClick={reset} disabled={!dirty}>
+              <RotateCcw size={14} /> {t("Limpar filtros")}
+            </button>
+            <button className={cn("btn py-1.5 text-xs", full ? "btn-primary" : "btn-ghost")} onClick={toggleFull} title={full ? t("Sair da tela cheia (Esc)") : t("Tela cheia")}>
+              {full ? <Minimize size={14} /> : <Maximize size={14} />} {full ? t("Sair da tela cheia") : t("Tela cheia")}
+            </button>
+          </div>
         </div>
-        <ScopeNote current={current} onAll={() => go(null)} />
+        {!full && <ScopeNote current={current} onAll={() => go(null)} />}
         <p className="text-xs text-muted">
           {t("{n} Digimon · {e} conexões", { n: nodes.length, e: edges.length })}
-          {hiddenCount > 0 && t(" · {n} ocultos pelos filtros", { n: hiddenCount })}. {t("Clique em um Digimon ou em uma seta para ver detalhes.")}
+          {hiddenCount > 0 && t(" · {n} ocultos pelos filtros", { n: hiddenCount })}.{" "}
+          {view === "tree" ? t("Clique em um Digimon para abrir a página dele. Arraste o fundo para mover a árvore.") : t("Clique em um Digimon ou em uma seta para ver detalhes.")}
         </p>
 
         {view === "tree" ? (
-          <div ref={scrollRef} className="card scroll-slim relative overflow-auto p-4" style={{ maxHeight: "75vh" }}>
+          <div
+            ref={scrollRef}
+            className={cn("card scroll-slim relative cursor-grab overflow-auto p-4 active:cursor-grabbing", full && "min-h-[60vh] flex-1 lg:min-h-0")}
+            style={{ maxHeight: full ? undefined : "75vh" }}
+            onPointerDown={(ev) => {
+              const el = scrollRef.current;
+              if (!el || ev.button !== 0 || (ev.target as Element).closest("a,button,g[data-edge]")) return;
+              pan.current = { x: ev.clientX, y: ev.clientY, left: el.scrollLeft, top: el.scrollTop };
+              el.setPointerCapture(ev.pointerId);
+            }}
+            onPointerMove={(ev) => {
+              const el = scrollRef.current;
+              if (!el || !pan.current) return;
+              el.scrollLeft = pan.current.left - (ev.clientX - pan.current.x);
+              el.scrollTop = pan.current.top - (ev.clientY - pan.current.y);
+            }}
+            onPointerUp={() => (pan.current = null)}
+            onPointerCancel={() => (pan.current = null)}
+          >
             <div style={{ width: layout.width * zoom, height: layout.height * zoom }}>
               <div className="relative origin-top-left" style={{ width: layout.width, height: layout.height, transform: `scale(${zoom})` }}>
                 {layout.headers.map((h) => (
@@ -211,17 +304,30 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
                       const b = pos.get(e.to);
                       if (!a || !b) return null;
                       const x1 = a.x + NODE_W, y1 = a.y + NODE_H / 2, x2 = b.x - 2, y2 = b.y + NODE_H / 2;
-                      const dx = Math.max(COL_GAP / 2, (x2 - x1) / 2);
-                      const d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
+                      let d: string, mx: number, my: number;
+                      if (b.col === a.col + 1) {
+                        const lx = x1 + (lanes.get(src) ?? COL_GAP / 2);
+                        const r = Math.min(8, Math.abs(y2 - y1) / 2);
+                        const s = Math.sign(y2 - y1);
+                        d = r < 1
+                          ? `M${x1},${y1} H${x2}`
+                          : `M${x1},${y1} H${lx - r} Q${lx},${y1} ${lx},${y1 + s * r} V${y2 - s * r} Q${lx},${y2} ${lx + r},${y2} H${x2}`;
+                        mx = (lx + x2) / 2;
+                        my = y2;
+                      } else {
+                        const dx = Math.max(COL_GAP / 2, (x2 - x1) / 2);
+                        d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
+                        mx = (x1 + 3 * (x1 + dx) + 3 * (x2 - dx) + x2) / 8;
+                        my = (y1 + 3 * y1 + 3 * y2 + y2) / 8;
+                      }
                       const info = EVOLUTION_KINDS[evoKindOf(e.kind)];
                       const dim = lineage && !lineage.edges.has(e.id);
+                      const lit = lineage && !dim;
                       const isSel = selected?.type === "edge" && selected.id === e.id;
-                      const mx = (x1 + 3 * (x1 + dx) + 3 * (x2 - dx) + x2) / 8;
-                      const my = (y1 + 3 * y1 + 3 * y2 + y2) / 8;
                       return (
-                        <g key={`${e.id}-${i}`} className="cursor-pointer" onClick={() => setSelected({ type: "edge", id: e.id })} style={{ opacity: dim ? 0.15 : 1, transition: "opacity .2s" }}>
-                          <path d={d} fill="none" stroke="transparent" strokeWidth={14} />
-                          <path d={d} fill="none" stroke={info.color} strokeWidth={isSel ? 3.5 : 2} strokeDasharray={lineStyle(e.status)} markerEnd={`url(#arrow-${evoKindOf(e.kind)})`} opacity={e.imported && !e.contexts.length ? 0.35 : e.kind === "normal" ? 0.8 : 1} />
+                        <g key={`${e.id}-${i}`} data-edge className="cursor-pointer" onClick={() => setSelected({ type: "edge", id: e.id })} style={{ opacity: dim ? 0.08 : 1, transition: "opacity .2s" }}>
+                          <path d={d} fill="none" stroke="transparent" strokeWidth={12} />
+                          <path d={d} fill="none" stroke={info.color} strokeWidth={isSel || lit ? 2.5 : 1.5} strokeLinejoin="round" strokeDasharray={lineStyle(e.status)} markerEnd={`url(#arrow-${evoKindOf(e.kind)})`} opacity={lit || isSel ? 1 : e.imported && !e.contexts.length ? 0.3 : e.kind === "normal" ? 0.55 : 0.9} />
                           {i === 0 && e.kind !== "normal" && (
                             <g transform={`translate(${mx},${my})`}>
                               <rect x={-24} y={-9} width={48} height={18} rx={9} fill="var(--surface)" stroke={info.color} />
@@ -242,8 +348,10 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
                     root={n.id === graph.rootId}
                     selected={selected?.type === "node" && selected.id === n.id}
                     dim={!!lineage && !lineage.nodes.has(n.id)}
-                    onClick={() => setSelected({ type: "node", id: n.id })}
-                    onHover={(h) => setHover(h ? n.id : null)}
+                    onHover={(h) => {
+                      setHover(h ? n.id : null);
+                      if (h) setSelected({ type: "node", id: n.id });
+                    }}
                   />
                 ))}
               </div>
@@ -252,10 +360,10 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
         ) : (
           <EdgeList edges={edges} byId={byId} onSelect={(id) => setSelected({ type: "edge", id })} selectedId={selected?.type === "edge" ? selected.id : null} showMedia={!current} />
         )}
-        <Legend />
+        {!full && <Legend />}
       </div>
 
-      <aside className="lg:sticky lg:top-20 lg:self-start">
+      <aside className={full ? "scroll-slim lg:min-h-0 lg:overflow-auto" : "lg:sticky lg:top-20 lg:self-start"}>
         <div className="card fade-in p-4">
           {selNode ? (
             <NodeDetails n={selNode} root={selNode.id === graph.rootId} edges={edges} byId={byId} onEdge={(id) => setSelected({ type: "edge", id })} />
@@ -292,33 +400,47 @@ function ScopeNote({ current, onAll }: { current: Current; onAll: () => void }) 
   );
 }
 
-function TreeNode({ n, x, y, root, selected, dim, onClick, onHover }: { n: GNode; x: number; y: number; root: boolean; selected: boolean; dim: boolean; onClick: () => void; onHover: (h: boolean) => void }) {
+function TreeNode({ n, x, y, root, selected, dim, onHover }: { n: GNode; x: number; y: number; root: boolean; selected: boolean; dim: boolean; onHover: (h: boolean) => void }) {
   const { t } = useI18n();
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      onDoubleClick={() => (window.location.href = `/digimon/${n.slug}`)}
+    <div
+      className="group/node absolute"
+      style={{ left: x, top: y, width: NODE_W, height: NODE_H, opacity: dim ? 0.3 : 1, transition: "opacity .2s" }}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
-      className={cn(
-        "absolute flex items-center gap-2 rounded-[4px] border bg-surface p-1 pr-2 text-left transition-[border-color,opacity] duration-200 hover:border-fg/50",
-        selected ? "outline outline-2 outline-offset-1 outline-primary" : "",
-        root ? "border-primary" : "border-line",
-      )}
-      style={{ left: x, top: y, width: NODE_W, height: NODE_H, opacity: dim ? 0.3 : 1 }}
-      title={t("{name} — {stage}. Duplo clique abre a página.", { name: n.name, stage: n.stageName })}
     >
-      <DigimonAvatar name={n.name} imageUrl={n.imageUrl} className="h-[50px] w-[50px] shrink-0" />
-      <span className="min-w-0">
-        <span className="block truncate font-display text-[14px] font-semibold leading-tight">{n.name}</span>
-        <span className="mt-0.5 flex items-center gap-1 text-[10px] text-muted">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: n.stageColor }} />
-          <span className="truncate">{n.stageName}</span>
-          {n.attrSlug && n.attrSlug !== "no-data" && <AttributeIcon slug={n.attrSlug} name={n.attrName ?? undefined} size={12} />}
+      <Link
+        href={`/digimon/${n.slug}`}
+        draggable={false}
+        className={cn(
+          "flex h-full w-full items-center gap-2 rounded-[4px] border bg-surface p-1 pr-2 text-left transition-colors duration-200 hover:border-primary hover:bg-surface-2",
+          root ? "border-primary" : selected ? "border-fg/50" : "border-line",
+          root && "ring-2 ring-primary/30",
+        )}
+        title={t("{name} — {stage}. Clique para abrir a página.", { name: n.name, stage: n.stageName })}
+      >
+        <DigimonAvatar name={n.name} imageUrl={n.imageUrl} className="h-[50px] w-[50px] shrink-0" />
+        <span className="min-w-0">
+          <span className="block truncate font-display text-[14px] font-semibold leading-tight group-hover/node:text-primary">{n.name}</span>
+          <span className="mt-0.5 flex items-center gap-1 text-[10px] text-muted">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: n.stageColor }} />
+            <span className="truncate">{n.stageName}</span>
+            {n.attrSlug && n.attrSlug !== "no-data" && <AttributeIcon slug={n.attrSlug} name={n.attrName ?? undefined} size={12} />}
+          </span>
         </span>
-      </span>
-    </button>
+      </Link>
+      {!root && (
+        <Link
+          href={`/linhas/${n.slug}`}
+          draggable={false}
+          aria-label={t("Centralizar árvore")}
+          title={t("Centralizar árvore")}
+          className="absolute -right-2 -top-2 hidden h-6 w-6 items-center justify-center rounded-full border border-line bg-surface text-muted shadow hover:border-primary hover:text-primary group-hover/node:flex"
+        >
+          <Focus size={13} />
+        </Link>
+      )}
+    </div>
   );
 }
 
