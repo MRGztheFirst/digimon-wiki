@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, BookOpen, CalendarClock, ChevronDown, ChevronUp, Clapperboard, Crown, Dna, Egg, Gamepad2, Layers, Lightbulb, Shapes, Sparkles, Tv, User, Users } from "lucide-react";
+import { ArrowRight, CalendarClock, ChevronDown, ChevronUp, Crown, Dna, Layers, Lightbulb, Shapes, User, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { cardSelect, type CardDigimon } from "@/lib/queries";
 import { Container, PageHeader, Section } from "@/components/ui";
@@ -8,8 +8,9 @@ import { EmptyState } from "@/components/digimon-card";
 import { DigimonAvatar } from "@/components/digimon-avatar";
 import { EvoKindBadge, StatusBadge } from "@/components/badges";
 import { EvolutionKindGlyph } from "@/components/evolution-kind-glyph";
-import { EVOLUTION_KINDS, MEDIA_KINDS, mediaKindOf, type EvolutionKind } from "@/lib/constants";
-import { cn, yearRange } from "@/lib/utils";
+import { MediaTimeline, getTimelineFaces, timelineInclude } from "@/components/media-timeline";
+import { EVOLUTION_KINDS, type EvolutionKind } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { getI18n } from "@/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,7 +20,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const SPECIAL_KINDS = ["armor", "spirit", "burst", "x-antibody", "mode-change", "warp", "dark", "special"] as const;
 const VARIANT_PREVIEW = 12;
-const KIND_ICONS = { Tv, Clapperboard, BookOpen, Gamepad2, Egg, Layers, Sparkles };
 const LEGENDARY = "#facc15";
 
 function Face({ d, size, ring, glow, className }: { d: CardDigimon; size: string; ring?: string; glow?: string; className?: string }) {
@@ -36,17 +36,19 @@ function Face({ d, size, ring, glow, className }: { d: CardDigimon; size: string
 
 export default async function Curiosities() {
   const { t, td, ln, num } = await getI18n();
-  const [trivia, fusions, specials, variants, groups, media, firsts] = await Promise.all([
+  const [trivia, fusions, specials, variants, groups, media, firsts, faces] = await Promise.all([
     db.trivia.findMany({ include: { digimon: { select: cardSelect } }, orderBy: { digimon: { number: "asc" } } }),
     db.evolution.findMany({ where: { kind: { in: ["dna", "biomerge"] }, imported: false }, include: { from: { select: cardSelect }, to: { select: cardSelect }, partners: { include: { digimon: { select: cardSelect } } } } }),
     db.evolution.findMany({ where: { kind: { in: [...SPECIAL_KINDS] }, imported: false }, include: { from: { select: cardSelect }, to: { select: cardSelect } } }),
     db.digimon.findMany({ where: { baseId: { not: null } }, select: { ...cardSelect, variantKind: true, base: { select: cardSelect } }, orderBy: { number: "asc" } }),
     db.group.findMany({ include: { members: { include: { digimon: { select: cardSelect } } } }, orderBy: [{ legendary: "desc" }, { name: "asc" }] }),
-    db.media.findMany({ where: { year: { not: null } }, orderBy: { year: "asc" }, include: { _count: { select: { appearances: true } } } }),
+    db.media.findMany({ where: { imported: false }, orderBy: [{ year: "asc" }, { name: "asc" }], include: timelineInclude }),
     db.digimon.groupBy({ by: ["firstYear"], where: { firstYear: { not: null } }, _count: { _all: true } }),
+    getTimelineFaces(),
   ]);
   const kinds = SPECIAL_KINDS.map((k) => [k, specials.filter((e) => e.kind === k)] as const).filter(([, list]) => list.length > 0);
-  const years = [...new Set([...media.map((m) => m.year!), ...firsts.map((f) => f.firstYear!)])].sort((a, b) => a - b);
+  const debuts = new Map(firsts.map((f) => [f.firstYear!, f._count._all]));
+  const years = new Set([...media.map((m) => m.year ?? 0), ...debuts.keys()]);
 
   const toc = [
     { id: "fatos", icon: Lightbulb, n: trivia.length, label: t("Curiosidades") },
@@ -54,7 +56,7 @@ export default async function Curiosities() {
     { id: "fusoes", icon: Dna, n: fusions.length, label: t("Fusões") },
     { id: "especiais", icon: Layers, n: specials.length, label: t("Evoluções especiais") },
     { id: "variantes", icon: Shapes, n: variants.length, label: t("Variantes") },
-    { id: "cronologia", icon: CalendarClock, n: years.length, label: t("Anos na cronologia") },
+    { id: "cronologia", icon: CalendarClock, n: years.size, label: t("Anos na cronologia") },
   ];
 
   return (
@@ -220,48 +222,7 @@ export default async function Curiosities() {
         </Section>
 
         <Section id="cronologia" title={t("Cronologia de aparições")} description={t("Obras cadastradas por ano de lançamento e primeiras aparições documentadas.")}>
-          <ol className="relative mx-auto max-w-5xl">
-            <span className="absolute bottom-0 left-5 top-0 w-0.5 -translate-x-1/2 rounded-full md:left-1/2" aria-hidden="true"
-              style={{ background: "linear-gradient(to bottom, var(--primary), color-mix(in oklab, var(--primary) 25%, var(--line)) 55%, transparent)" }} />
-            {years.map((y, i) => {
-              const ms = media.filter((m) => m.year === y);
-              const debut = firsts.find((f) => f.firstYear === y)?._count._all ?? 0;
-              const right = i % 2 === 1;
-              const accent = ms[0]?.color ?? "var(--muted)";
-              return (
-                <li key={y} className="relative pb-12 pl-12 last:pb-0 md:grid md:grid-cols-2 md:gap-x-24 md:pl-0">
-                  <span className="absolute left-5 top-0 z-10 -translate-x-1/2 md:left-1/2">
-                    <span className="flex h-8 items-center rounded-full border-2 bg-bg px-3 font-mono text-sm font-bold tabular-nums shadow-[0_0_0_5px_var(--bg)]" style={{ borderColor: accent }}>{y}</span>
-                  </span>
-                  <div className={cn("flex flex-col gap-2.5 pt-11 md:pt-0", right ? "reveal-right md:col-start-2" : "reveal-left md:col-start-1 md:items-end md:text-right")}>
-                    {ms.map((m) => {
-                      const Icon = KIND_ICONS[MEDIA_KINDS[mediaKindOf(m.kind)].icon];
-                      return (
-                        <Link key={m.id} href={`/universos/${m.slug}`} style={{ "--c": m.color } as React.CSSProperties}
-                          className="group/m card relative w-full overflow-hidden px-4 py-3.5 transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-(--c) md:max-w-md">
-                          <span className={cn("absolute inset-y-0 left-0 w-1", !right && "md:left-auto md:right-0")} style={{ background: m.color }} aria-hidden="true" />
-                          <span className="pointer-events-none absolute -top-12 h-24 w-24 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover/m:opacity-25"
-                            style={{ background: m.color, [right ? "left" : "right"]: "-2rem" }} aria-hidden="true" />
-                          <span className={cn("flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted", !right && "md:flex-row-reverse")}>
-                            <Icon size={13} style={{ color: m.color }} aria-hidden="true" />
-                            {t(MEDIA_KINDS[mediaKindOf(m.kind)].label)} · {yearRange(m.year, m.endYear)}
-                          </span>
-                          <span className="mt-1 block font-display text-lg font-semibold leading-tight transition-colors group-hover/m:text-primary">{ln(m)}</span>
-                          <span className="mt-0.5 block text-xs text-muted">{m._count.appearances} Digimon</span>
-                        </Link>
-                      );
-                    })}
-                    {debut > 0 && (
-                      <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted">
-                        <Sparkles size={12} className="text-primary" aria-hidden="true" />
-                        {t("{n} estreias documentadas", { n: num(debut) })}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+          <MediaTimeline media={media} faces={faces} debuts={debuts} empty={t("Nenhuma obra com página completa deste tipo ainda.")} />
         </Section>
       </Container>
     </div>
