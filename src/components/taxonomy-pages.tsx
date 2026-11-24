@@ -29,7 +29,7 @@ export async function TaxonomyIndexPage({ kind }: { kind: TaxonomyKind }) {
       <PageHeader crumbs={[[null, tr(t.title)]]} eyebrow={tr("Classificação")} title={tr(t.title)} subtitle={tr(t.intro)} />
       <Container className="space-y-10 py-10">
         {kind === "estagios" && (
-          <div className="card scrollbar-thin overflow-x-auto p-5">
+          <div className="card scroll-slim overflow-x-auto p-5">
             <div className="flex min-w-max items-center gap-2">
               {main.map((s, i) => (
                 <span key={s.slug} className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export async function TaxonomyTermPage({ kind, slug, page }: { kind: TaxonomyKin
         <aside>
           <div className="card sticky top-20 p-4">
             <div className="label mb-2">{tr(t.title)}</div>
-            <ul className="scrollbar-thin max-h-[70vh] space-y-0.5 overflow-auto">
+            <ul className="scroll-slim max-h-[70vh] space-y-0.5 overflow-auto">
               {siblings.map((s) => (
                 <li key={s.slug}>
                   <Link href={`/${kind}/${s.slug}`} className={`flex items-center justify-between rounded-[4px] px-2 py-1.5 text-sm hover:bg-surface-2 ${s.slug === slug ? "bg-surface-2 font-semibold" : "text-muted"}`}>

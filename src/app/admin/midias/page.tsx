@@ -13,7 +13,7 @@ export default async function AdminMedia({ searchParams }: { searchParams: SP })
     <div className="mx-auto max-w-6xl">
       <AdminTitle title="Jogos e mídias" subtitle="Animes, filmes, mangás, jogos, V-Pets e card games." actions={<Link href="/admin/midias/nova" className="btn btn-primary"><Plus size={16} /> Nova obra</Link>} />
       <Flash ok={ok} erro={erro} />
-      <div className="card scrollbar-thin overflow-x-auto">
+      <div className="card scroll-slim overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-line text-left text-xs uppercase tracking-wider text-muted">
             <tr><th className="p-3">Obra</th><th className="p-3">Tipo</th><th className="p-3">Ano</th><th className="p-3">Aparições</th><th className="p-3">Evoluções</th><th className="p-3">Sistemas</th></tr>

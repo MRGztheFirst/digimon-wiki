@@ -153,7 +153,7 @@ export default async function Home() {
         </Section>
 
         <Section title={t("Estágios evolutivos")} action={<SeeAll href="/estagios" />}>
-          <div className="scrollbar-thin overflow-x-auto pb-2">
+          <div className="scroll-slim overflow-x-auto pb-2">
             <ol className="flex min-w-max lg:min-w-0">
               {mainStages.map((s, i) => (
                 <li key={s.id} className="w-36 shrink-0 lg:w-auto lg:flex-1">

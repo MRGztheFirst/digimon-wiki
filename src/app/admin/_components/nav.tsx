@@ -32,7 +32,7 @@ export function AdminNav() {
         </Link>
         <ThemeToggle />
       </div>
-      <nav className="scrollbar-thin flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible" aria-label="Edição">
+      <nav className="scroll-slim flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible" aria-label="Edição">
         {NAV.map(([href, label, Icon]) => {
           const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
           return (

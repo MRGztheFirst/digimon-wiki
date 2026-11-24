@@ -47,7 +47,7 @@ export async function DigimonForm({ d }: { d?: Full | null }) {
         <div className="mt-5 grid gap-6 md:grid-cols-3">
           <fieldset>
             <legend className="mb-2 text-xs font-medium text-muted">Tipos</legend>
-            <div className="scrollbar-thin max-h-56 space-y-1.5 overflow-auto rounded-[4px] border border-line p-3">
+            <div className="scroll-slim max-h-56 space-y-1.5 overflow-auto rounded-[4px] border border-line p-3">
               {types.map((t) => <Checkbox key={t.id} name="typeIds" value={t.id} label={t.name} defaultChecked={d?.types.some((x) => x.typeId === t.id)} />)}
             </div>
           </fieldset>

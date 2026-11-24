@@ -153,7 +153,7 @@ export default async function EditDigimon({ params, searchParams }: { params: Pr
       </div>
 
       <Panel title={`Aparições (${d.appearances.length})`} description="Em qual obra aparece, participação e forma apresentada.">
-        <div className="scrollbar-thin mb-4 overflow-x-auto">
+        <div className="scroll-slim mb-4 overflow-x-auto">
           <table className="w-full min-w-[600px] text-sm">
             <tbody className="divide-y divide-line">
               {d.appearances.map((a) => (

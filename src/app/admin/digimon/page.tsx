@@ -34,7 +34,7 @@ export default async function AdminDigimonList({ searchParams }: { searchParams:
         </select>
         <button className="btn btn-ghost"><Search size={15} /> Filtrar</button>
       </form>
-      <div className="card scrollbar-thin overflow-x-auto">
+      <div className="card scroll-slim overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="border-b border-line text-left text-xs uppercase tracking-wider text-muted">
             <tr><th className="p-3">Nº</th><th className="p-3">Nome</th><th className="p-3">Estágio</th><th className="p-3">Atributo</th><th className="p-3">Evol.</th><th className="p-3">Apar.</th><th className="p-3">Revisão</th></tr>

@@ -150,7 +150,7 @@ export function MediaPicker({ choices, current, onPick }: { choices: MediaChoice
               className="input h-9 pl-8 text-sm"
             />
           </div>
-          <div ref={list} id={listId} role="listbox" aria-label={t("Ver a árvore de")} className="scrollbar-thin max-h-80 overflow-y-auto p-1">
+          <div ref={list} id={listId} role="listbox" aria-label={t("Ver a árvore de")} className="scroll-slim max-h-80 overflow-y-auto p-1">
             {!query.trim() && option(rows[0])}
             {groups.map((g) => {
               const Icon = ICONS[g.kind];

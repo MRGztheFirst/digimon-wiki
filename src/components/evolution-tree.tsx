@@ -189,7 +189,7 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
         </p>
 
         {view === "tree" ? (
-          <div ref={scrollRef} className="card scrollbar-thin relative overflow-auto p-4" style={{ maxHeight: "75vh" }}>
+          <div ref={scrollRef} className="card scroll-slim relative overflow-auto p-4" style={{ maxHeight: "75vh" }}>
             <div style={{ width: layout.width * zoom, height: layout.height * zoom }}>
               <div className="relative origin-top-left" style={{ width: layout.width, height: layout.height, transform: `scale(${zoom})` }}>
                 {layout.headers.map((h) => (

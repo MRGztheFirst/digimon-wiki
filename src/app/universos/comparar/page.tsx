@@ -108,7 +108,7 @@ export default async function CompareUniverses({ searchParams }: { searchParams:
         {!d ? (
           <div className="card p-8 text-center text-muted">{t("Escolha um Digimon acima para montar a comparação. Exemplo:")} <Link className="text-accent hover:underline" href={hrefWith(["digital-monster-ver-1", "digimon-world", "digimon-adventure", "digimon-story-cyber-sleuth"]) + "&digimon=agumon"}>{t("Agumon no V-Pet, Digimon World, Adventure e Cyber Sleuth")}</Link>.</div>
         ) : (
-          <div className="card scrollbar-thin overflow-x-auto">
+          <div className="card scroll-slim overflow-x-auto">
             <table className="w-full border-collapse text-sm" style={{ minWidth: 260 + selected.length * 190 }}>
               <thead>
                 <tr className="border-b border-line">

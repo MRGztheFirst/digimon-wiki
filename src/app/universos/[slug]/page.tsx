@@ -113,7 +113,7 @@ export default async function MediaPage({ params }: { params: Promise<{ slug: st
         <Section title={t("Evoluções registradas nesta obra ({n})", { n: evo.length })} icon={<GitBranch size={20} />}
           description={t("Válidas dentro deste universo. Requisitos só aparecem quando documentados.")}>
           {evo.length ? (
-            <div className="card scrollbar-thin overflow-x-auto">
+            <div className="card scroll-slim overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <thead className="border-b border-line text-left text-xs uppercase tracking-wider text-muted">
                   <tr><th className="p-3">{t("Evolução")}</th><th className="p-3">{t("Tipo")}</th><th className="p-3">{t("Requisitos / observações")}</th><th className="p-3">{t("Status")}</th></tr>

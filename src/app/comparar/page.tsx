@@ -92,7 +92,7 @@ function Cols({ children, className }: { children: React.ReactNode; className?: 
 
 function Board({ cols, heads, children }: { cols: number; heads: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="scrollbar-thin -mx-4 overflow-x-auto px-4 pb-1 md:-mx-6 md:px-6 lg:mx-0 lg:overflow-visible lg:px-0">
+    <div className="scroll-slim -mx-4 overflow-x-auto px-4 pb-1 md:-mx-6 md:px-6 lg:mx-0 lg:overflow-visible lg:px-0">
       <div className="min-w-(--min) lg:min-w-0" style={{ ["--min" as string]: `${cols * 11}rem`, ["--cols" as string]: `repeat(${cols}, minmax(0, 1fr))` }}>
         <Cols className="mb-4 border-b border-line pb-3 lg:hidden">{heads}</Cols>
         {children}
