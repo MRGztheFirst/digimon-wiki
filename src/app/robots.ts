@@ -6,5 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: ["GPTBot", "CCBot", "Bytespider", "meta-externalagent", "Google-Extended", "anthropic-ai", "ClaudeBot"], disallow: "/" },
       { userAgent: "*", allow: "/", disallow: ["/api/", "/admin", "/*?"] },
     ],
+    sitemap: "https://www.digimondb.com/sitemap.xml",
   };
 }
