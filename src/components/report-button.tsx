@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { MessageSquareWarning } from "lucide-react";
-import { useI18n } from "@/i18n/client";
+import { useI18n, useSitePathname } from "@/i18n/client";
 
 const REPO_ISSUES = "https://github.com/MRGztheFirst/digimon-wiki/issues/new";
 
 export function ReportButton() {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const { t } = useI18n();
   const [href, setHref] = useState(REPO_ISSUES);
 

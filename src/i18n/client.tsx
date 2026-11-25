@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useMemo } from "react";
-import { DEFAULT_LOCALE, makeTranslate, type Locale, type Messages, type Translate } from "./config";
+import { usePathname } from "next/navigation";
+import { DEFAULT_LOCALE, LOCALES, makeTranslate, type Locale, type Messages, type Translate } from "./config";
 
 type I18nValue = { locale: Locale; t: Translate };
 
@@ -14,4 +15,11 @@ export function I18nProvider({ locale, messages, children }: { locale: Locale; m
 
 export function useI18n() {
   return useContext(I18nContext);
+}
+
+const LOCALE_PREFIX = new RegExp(`^/(${LOCALES.join("|")})(?=/|$)`);
+
+export function useSitePathname() {
+  const pathname = usePathname();
+  return pathname.replace(LOCALE_PREFIX, "") || "/";
 }

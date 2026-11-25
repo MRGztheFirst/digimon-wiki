@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Logo, Wordmark } from "./logo";
-import { useI18n } from "@/i18n/client";
+import { useI18n, useSitePathname } from "@/i18n/client";
 
 export function SiteFooter() {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const { t } = useI18n();
   if (pathname.startsWith("/admin")) return null;
   return (

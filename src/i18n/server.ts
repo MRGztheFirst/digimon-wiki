@@ -16,7 +16,7 @@ export function setRequestLocale(value: string) {
 
 export async function localeFromParams(params: Promise<{ lang: string }>) {
   const { lang } = await params;
-  setRequestLocale(lang);
+  setRequestLocale(isLocale(lang) ? lang : DEFAULT_LOCALE);
   return lang;
 }
 

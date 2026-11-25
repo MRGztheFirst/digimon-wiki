@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
@@ -9,7 +8,7 @@ import { LanguageSelect } from "./language-select";
 import { SearchBox } from "./search-box";
 import { Logo, Wordmark } from "./logo";
 import { cn } from "@/lib/utils";
-import { useI18n } from "@/i18n/client";
+import { useI18n, useSitePathname } from "@/i18n/client";
 
 const NAV = [
   { href: "/digimon", label: "Enciclopédia" },
@@ -21,7 +20,7 @@ const NAV = [
 ];
 
 export function SiteHeader() {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);

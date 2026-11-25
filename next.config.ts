@@ -5,6 +5,7 @@ const isProdCommand = process.env.NODE_ENV === "production" && !process.env.VERC
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
+  agentRules: false,
   allowedDevOrigins: ["172.16.20.223"],
   distDir: isProdCommand ? ".next-prod" : ".next",
   outputFileTracingIncludes: { "/**": ["./prisma/dev.db"] },
