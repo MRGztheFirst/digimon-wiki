@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { ExternalLink, Focus, Info, List, Maximize, Minimize, Minus, Network, Plus, RotateCcw, Scan, X } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Focus, Info, List, Maximize, Minimize, Minus, Network, Plus, RotateCcw, Scan, Search, X } from "lucide-react";
 import type { GEdge, GraphData, GraphFilters, GNode } from "@/lib/graph-types";
 import { COL_GAP, NODE_H, NODE_W, filterGraph, layoutGraph } from "@/lib/graph-layout";
 import { EVOLUTION_KINDS, MEDIA_KINDS, MEDIA_KIND_KEYS, evoKindOf, mediaKindOf } from "@/lib/constants";
@@ -364,7 +364,7 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
       </div>
 
       <aside className={full ? "scroll-slim lg:min-h-0 lg:overflow-auto" : "lg:sticky lg:top-20 lg:self-start"}>
-        <div className="card fade-in p-4">
+        <div className={cn("card fade-in p-4", !full && "scroll-slim lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto")}>
           {selNode ? (
             <NodeDetails n={selNode} root={selNode.id === graph.rootId} edges={edges} byId={byId} onEdge={(id) => setSelected({ type: "edge", id })} />
           ) : selEdge ? (
@@ -547,42 +547,101 @@ function NodeDetails({ n, root, edges, byId, onEdge }: { n: GNode; root: boolean
           </Link>
         )}
       </div>
-      <EdgeGroup title={t("Evolui a partir de")} edges={from} byId={byId} pick={(e) => [e.from, ...e.partners]} onEdge={onEdge} />
-      <EdgeGroup title={t("Pode evoluir para")} edges={to} byId={byId} pick={(e) => [e.to]} onEdge={onEdge} />
+      <EdgeGroup key={`from-${n.id}`} title={t("Evolui a partir de")} edges={from} byId={byId} pick={(e) => [e.from, ...e.partners]} onEdge={onEdge} />
+      <EdgeGroup key={`to-${n.id}`} title={t("Pode evoluir para")} edges={to} byId={byId} pick={(e) => [e.to]} onEdge={onEdge} />
     </div>
   );
 }
 
+const EDGE_LIMIT = 6;
+const EDGE_SEARCH_FROM = 10;
+const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
 function EdgeGroup({ title, edges, byId, pick, onEdge }: { title: string; edges: GEdge[]; byId: Map<number, GNode>; pick: (e: GEdge) => number[]; onEdge: (id: number) => void }) {
   const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const needle = fold(q.trim());
+  const filtered = needle ? edges.filter((e) => pick(e).some((id) => fold(byId.get(id)?.name ?? "").includes(needle))) : edges;
+  const shown = open || needle ? filtered : filtered.slice(0, EDGE_LIMIT);
+  const hidden = filtered.length - shown.length;
+
   return (
     <div>
-      <div className="mb-1.5 label">{title}</div>
+      <div className="mb-2 flex items-center gap-2">
+        <span className="label">{title}</span>
+        {edges.length > 0 && (
+          <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-surface-2 px-1.5 font-mono text-[10.5px] font-semibold tabular-nums text-muted">{edges.length}</span>
+        )}
+        <span aria-hidden="true" className="h-px flex-1 bg-line" />
+      </div>
       {edges.length === 0 ? (
         <p className="text-xs italic text-muted">{t("Nenhuma conexão visível com os filtros atuais.")}</p>
       ) : (
-        <ul className="space-y-1">
-          {edges.map((e) => (
-            <li key={e.id} className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-[4px] px-2 py-1.5 text-sm hover:bg-surface-2">
-              <span className="font-medium">
-                {pick(e).map((id, i) => {
-                  const node = byId.get(id);
-                  return (
-                    <span key={id}>
-                      {i > 0 && " + "}
-                      {node ? <Link href={`/digimon/${node.slug}`} className="hover:text-primary hover:underline">{node.name}</Link> : null}
+        <>
+          {edges.length >= EDGE_SEARCH_FROM && (
+            <label className="relative mb-2 block">
+              <span className="sr-only">{t("Buscar Digimon...")}</span>
+              <Search size={14} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type="search"
+                value={q}
+                onChange={(ev) => setQ(ev.target.value)}
+                placeholder={t("Buscar Digimon...")}
+                autoComplete="off"
+                className="input h-8 py-0 pl-8 text-[13px]"
+              />
+            </label>
+          )}
+          {filtered.length === 0 ? (
+            <p className="px-1.5 py-2 text-xs text-muted">{t("Nenhum resultado.")}</p>
+          ) : (
+            <ul className={cn("space-y-0.5", (open || needle) && filtered.length > EDGE_LIMIT && "scroll-slim -mr-1.5 max-h-80 overflow-y-auto pr-1.5")}>
+              {shown.map((e) => {
+                const ids = pick(e);
+                const first = byId.get(ids[0]);
+                return (
+                  <li key={e.id} className="group/edge flex items-center gap-2 rounded-[6px] py-1 pl-1 pr-1 text-sm transition-colors hover:bg-surface-2">
+                    {first && <DigimonAvatar name={first.name} imageUrl={first.imageUrl} color={first.stageColor} accent={first.attrColor} className="h-7 w-7 shrink-0" rounded="rounded-[4px]" />}
+                    <span className="min-w-0 flex-1 truncate font-medium">
+                      {ids.map((id, i) => {
+                        const node = byId.get(id);
+                        return (
+                          <span key={id}>
+                            {i > 0 && <span className="text-muted"> + </span>}
+                            {node ? <Link href={`/digimon/${node.slug}`} className="hover:text-primary hover:underline" title={node.name}>{node.name}</Link> : null}
+                          </span>
+                        );
+                      })}
                     </span>
-                  );
-                })}
-              </span>
-              <button onClick={() => onEdge(e.id)} className="flex shrink-0 items-center gap-1 text-[11px] text-muted hover:text-fg" title={t("Ver detalhes desta evolução")}>
-                {e.kind !== "normal" && <KindPill k={e.kind} />}
-                {e.status !== "official" && <StatusPill s={e.status} />}
-                <span className="underline-offset-2 hover:underline">{t("detalhes")}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+                    {e.kind !== "normal" && <KindPill k={e.kind} />}
+                    {e.status !== "official" && <StatusPill s={e.status} />}
+                    <button
+                      type="button"
+                      onClick={() => onEdge(e.id)}
+                      aria-label={t("Ver detalhes desta evolução")}
+                      title={t("Ver detalhes desta evolução")}
+                      className="grid h-7 w-7 shrink-0 place-items-center rounded-[5px] text-muted opacity-60 transition-[opacity,color,background-color] group-hover/edge:opacity-100 hover:bg-surface hover:text-primary focus-visible:opacity-100"
+                    >
+                      <ChevronRight size={15} />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {!needle && filtered.length > EDGE_LIMIT && (
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              className="mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-[6px] border border-dashed border-line py-1.5 text-xs font-medium text-muted transition-colors hover:border-primary/60 hover:text-primary"
+            >
+              <ChevronDown size={14} className={cn("transition-transform duration-200 motion-reduce:transition-none", open && "rotate-180")} />
+              {open ? t("Ver menos") : t("Ver mais {n}", { n: hidden })}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
