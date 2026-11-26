@@ -114,7 +114,7 @@ export function LanguageSelect({ onBar = false, className }: { onBar?: boolean; 
       >
         <Flag locale={locale} className="h-3.5 w-5" />
         <span className="hidden font-mono text-xs font-medium sm:inline">{LOCALE_INFO[locale].short}</span>
-        <ChevronDown size={14} aria-hidden="true" className={cn("-ml-0.5 opacity-70 transition-transform motion-reduce:transition-none", open && "rotate-180")} />
+        <ChevronDown size={14} aria-hidden="true" className={cn("-ml-0.5 hidden opacity-70 transition-transform min-[400px]:block motion-reduce:transition-none", open && "rotate-180")} />
       </button>
 
       {open && (

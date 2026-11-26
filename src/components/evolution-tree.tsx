@@ -184,7 +184,7 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
     <div
       ref={rootRef}
       className={cn(
-        "grid gap-4 lg:grid-cols-[1fr_340px]",
+        "grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]",
         full && "fixed inset-0 z-50 overflow-auto bg-bg p-3 sm:p-4 lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden",
       )}
     >
@@ -247,7 +247,7 @@ export function EvolutionTree({ graph, slug, choices, current }: { graph: GraphD
               </button>
             </div>
           )}
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-1">
             <button className="btn btn-ghost py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-40" onClick={reset} disabled={!dirty}>
               <RotateCcw size={14} /> {t("Limpar filtros")}
             </button>

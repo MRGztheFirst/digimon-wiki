@@ -404,7 +404,7 @@ async function EvoColumn({ title, icon, items, self, direction }: {
           {annotated.length > 0 && (
             <ul className={`grid gap-x-4 gap-y-1.5 md:grid-cols-2 ${plain.length ? "mt-3" : ""}`}>
               {annotated.map((e) => (
-                <li key={`${e.id}-${e.target.id}`} className="flex items-center gap-2.5">
+                <li key={`${e.id}-${e.target.id}`} className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
                   <span className="shrink-0"><DigimonChip d={e.target} size="sm" /></span>
                   {e.kind !== "normal" && <span className="shrink-0"><EvoKindBadge kind={e.kind} /></span>}
                   {e.requirements && <span className="line-clamp-2 min-w-0 text-[11px] leading-snug text-muted" title={td(e.requirements)}>{td(e.requirements)}</span>}

@@ -47,7 +47,7 @@ export function Section({
 }) {
   return (
     <section id={id} className={cn("scroll-mt-20", className)}>
-      <div className="mb-5 flex items-end justify-between gap-4 border-b border-line pb-2.5">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-line pb-2.5">
         <div>
           <h2 className="font-display text-2xl font-semibold tracking-tight">{title}</h2>
           {description && <p className="mt-1 max-w-2xl text-sm text-muted">{description}</p>}

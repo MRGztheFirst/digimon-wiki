@@ -110,7 +110,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   return (
     <div>
       <section className="border-b border-line bg-surface">
-        <Container className="grid gap-10 py-10 md:py-12 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:gap-14">
+        <Container className="grid grid-cols-1 gap-10 py-10 md:py-12 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:gap-14">
           <div>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Digimon Database</h1>
             <p className="mt-3 max-w-xl text-[16px] leading-relaxed text-muted">
@@ -131,11 +131,11 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
           </div>
 
           {spot && (
-            <Link href={`/digimon/${spot.slug}`} className="group flex max-w-xl gap-5 rounded-[10px] border border-line bg-bg p-4 transition-colors hover:border-primary/60 lg:max-w-none">
-              <DigimonAvatar name={spot.name} imageUrl={spot.imageUrl} color={spot.stage?.color} sizes="176px" priority className="aspect-square w-36 shrink-0 sm:w-44" />
+            <Link href={`/digimon/${spot.slug}`} className="group flex max-w-xl gap-4 rounded-[10px] border border-line bg-bg p-4 transition-colors hover:border-primary/60 sm:gap-5 lg:max-w-none">
+              <DigimonAvatar name={spot.name} imageUrl={spot.imageUrl} color={spot.stage?.color} sizes="176px" priority className="aspect-square w-28 shrink-0 min-[360px]:w-36 sm:w-44" />
               <div className="min-w-0 self-center">
                 <div className="label">{t("Digimon em destaque")}</div>
-                <h2 className="mt-1 text-2xl font-bold tracking-tight group-hover:text-primary">{spot.name}</h2>
+                <h2 className="mt-1 break-words text-2xl font-bold tracking-tight group-hover:text-primary">{spot.name}</h2>
                 {spot.nameJp && <div className="font-jp text-sm text-muted">{spot.nameJp}</div>}
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {spot.stage && <span className="rounded-[5px] bg-surface-2 px-2 py-0.5 text-xs font-medium">{t(spot.stage.name)}</span>}

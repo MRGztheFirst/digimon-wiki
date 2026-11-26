@@ -20,10 +20,10 @@ export function Logo({ size = 28, onBar = false }: { size?: number; onBar?: bool
   );
 }
 
-export function Wordmark({ className }: { className?: string }) {
+export function Wordmark({ className, short = false }: { className?: string; short?: boolean }) {
   return (
-    <span className={`font-brand text-[19px] font-bold leading-none tracking-[-0.01em] ${className ?? ""}`}>
-      Digimon<span className="font-medium opacity-75"> Database</span>
+    <span className={`whitespace-nowrap font-brand text-[19px] font-bold leading-none tracking-[-0.01em] ${className ?? ""}`}>
+      Digimon<span className={`font-medium opacity-75${short ? " max-[359px]:hidden" : ""}`}> Database</span>
     </span>
   );
 }

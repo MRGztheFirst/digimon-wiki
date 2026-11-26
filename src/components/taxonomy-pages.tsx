@@ -62,12 +62,12 @@ export async function TaxonomyIndexPage({ kind }: { kind: TaxonomyKind }) {
 
 function TermGrid({ items, kind, mons }: { items: Awaited<ReturnType<typeof listTaxonomy>>; kind: TaxonomyKind; mons: Map<string, Mon[]> }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((i) => {
         const c = i.color ?? "var(--muted)";
         const list = mons.get(i.slug) ?? [];
         return (
-          <div key={i.slug} className="reveal">
+          <div key={i.slug} className="reveal min-w-0">
             <Link
               href={`/${kind}/${i.slug}`}
               className="card group relative flex h-full flex-col overflow-hidden transition-[border-color,transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:border-[var(--c)] hover:shadow-[0_16px_34px_-16px_var(--c)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"

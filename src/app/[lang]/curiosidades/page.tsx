@@ -166,11 +166,11 @@ export default async function Curiosities({ params }: { params: Promise<{ lang: 
         </Section>
 
         <Section id="especiais" title={t("Evoluções especiais")}>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             {kinds.map(([k, list]) => {
               const info = EVOLUTION_KINDS[k as EvolutionKind];
               return (
-                <div key={k} className="reveal card flex flex-col p-4 transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-(--c)" style={{ "--c": info.color } as React.CSSProperties}>
+                <div key={k} className="reveal card flex min-w-0 flex-col p-4 transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-(--c)" style={{ "--c": info.color } as React.CSSProperties}>
                   <div className="flex items-center gap-3">
                     <EvolutionKindGlyph kind={k} color={info.color} className="h-6 w-10 shrink-0" />
                     <span className="min-w-0 flex-1 font-semibold leading-tight">{t(info.label)}</span>
@@ -198,7 +198,7 @@ export default async function Curiosities({ params }: { params: Promise<{ lang: 
         <Section id="variantes" title={t("Variantes e formas alternativas")}>
           <div className="group">
             {variants.length > VARIANT_PREVIEW + 2 && <input type="checkbox" id="variantes-mais" className="peer sr-only" />}
-            <ul className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
               {variants.map((v, i) => (
                 <li key={v.id} className={variants.length > VARIANT_PREVIEW + 2 && i >= VARIANT_PREVIEW ? "hidden group-has-checked:block" : undefined}>
                   <Link href={`/digimon/${v.slug}`} className="group/row flex items-center gap-2 border-b border-line/70 px-1.5 py-2.5 text-sm transition-colors hover:bg-surface-2/60">

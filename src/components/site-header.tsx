@@ -28,10 +28,10 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 bg-bar text-bar-fg shadow-[0_1px_0_rgba(0,0,0,.12)]">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 md:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={t("Digimon Database — início")}>
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 md:px-6 lg:gap-6">
+        <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-2.5" aria-label={t("Digimon Database — início")}>
           <Logo onBar />
-          <Wordmark className="text-[17px] sm:text-[19px]" />
+          <Wordmark className="text-[15px] min-[400px]:text-[17px] sm:text-[19px]" short />
         </Link>
         <nav className="hidden h-full items-stretch gap-5 lg:flex" aria-label={t("Principal")}>
           {NAV.map((n) => {
@@ -50,7 +50,7 @@ export function SiteHeader() {
             );
           })}
         </nav>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           {pathname !== "/" && (
             <div className="hidden w-56 md:block xl:w-72">
               <SearchBox compact />
