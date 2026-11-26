@@ -70,7 +70,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ lang: 
   const { locale, t, td, ln } = await getI18n();
   const d = await load(slug);
   if (!d) notFound();
-  if (!process.env.VERCEL) db.$executeRaw`UPDATE "Digimon" SET "viewCount" = "viewCount" + 1 WHERE "id" = ${d.id}`.catch(() => {});
+  if (!process.env.VERCEL && process.env.NODE_ENV === "production") db.$executeRaw`UPDATE "Digimon" SET "viewCount" = "viewCount" + 1 WHERE "id" = ${d.id}`.catch(() => {});
 
   type EvoItem = {
     id: number; kind: string; status: string; notes: string | null; requirements: string | null; imported: boolean;
