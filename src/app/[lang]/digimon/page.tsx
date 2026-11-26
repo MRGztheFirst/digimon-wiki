@@ -24,12 +24,12 @@ export default async function DigimonIndex({ params, searchParams }: { params: P
 
   const [result, stages, attributes, types, families, groups, media] = await Promise.all([
     searchDigimon(filters),
-    db.stage.findMany({ orderBy: [{ order: "asc" }, { isSpecial: "asc" }], select: { slug: true, name: true, nameJp: true } }),
-    db.attribute.findMany({ select: { slug: true, name: true, nameJp: true } }),
+    db.stage.findMany({ orderBy: [{ order: "asc" }, { isSpecial: "asc" }], select: { slug: true, name: true, nameJp: true, color: true } }),
+    db.attribute.findMany({ select: { slug: true, name: true, nameJp: true, color: true } }),
     db.digimonType.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true, nameJp: true } }),
-    db.family.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true, nameJp: true } }),
+    db.family.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true, nameJp: true, color: true } }),
     db.group.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true, nameJp: true } }),
-    db.media.findMany({ orderBy: [{ year: "asc" }], select: { slug: true, name: true, nameJp: true, kind: true } }),
+    db.media.findMany({ orderBy: [{ year: "asc" }], select: { slug: true, name: true, nameJp: true, kind: true, color: true } }),
   ]);
 
   const makeHref = (p: number) => {
@@ -52,14 +52,14 @@ export default async function DigimonIndex({ params, searchParams }: { params: P
         <SearchFiltersForm
           values={filters}
           options={{
-            estagio: stages.map((s) => [s.slug, ln(s)]),
-            atributo: attributes.map((a) => [a.slug, ln(a)]),
+            estagio: stages.map((s) => [s.slug, ln(s), s.color]),
+            atributo: attributes.map((a) => [a.slug, ln(a), a.color]),
             tipo: types.map((ty) => [ty.slug, ln(ty)]),
-            familia: families.map((f) => [f.slug, ln(f)]),
+            familia: families.map((f) => [f.slug, ln(f), f.color]),
             grupo: groups.map((g) => [g.slug, ln(g)]),
-            jogo: media.filter((m) => m.kind === "game").map((m) => [m.slug, ln(m)]),
-            anime: media.filter((m) => m.kind === "anime" || m.kind === "movie").map((m) => [m.slug, ln(m)]),
-            midia: media.filter((m) => !["game", "anime", "movie"].includes(m.kind)).map((m) => [m.slug, ln(m)]),
+            jogo: media.filter((m) => m.kind === "game").map((m) => [m.slug, ln(m), m.color]),
+            anime: media.filter((m) => m.kind === "anime" || m.kind === "movie").map((m) => [m.slug, ln(m), m.color]),
+            midia: media.filter((m) => !["game", "anime", "movie"].includes(m.kind)).map((m) => [m.slug, ln(m), m.color]),
           }}
         />
         <div className="min-w-0">

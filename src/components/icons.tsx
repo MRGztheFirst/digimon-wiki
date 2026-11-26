@@ -6,6 +6,9 @@ const FAMILIES = new Set([
   "virus-busters", "dragons-roar", "jungle-troopers", "dark-area", "unknown",
 ]);
 
+export const hasAttributeIcon = (slug?: string | null) => !!slug && ATTRIBUTES.has(slug);
+export const hasFamilyIcon = (slug?: string | null) => !!slug && FAMILIES.has(slug);
+
 export function AttributeIcon({ slug, name, size = 16, className }: { slug?: string | null; name?: string; size?: number; className?: string }) {
   if (!slug || !ATTRIBUTES.has(slug)) return null;
   return (
