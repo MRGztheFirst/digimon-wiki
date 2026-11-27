@@ -2,6 +2,12 @@ export function cn(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
+export function artSources(url: string) {
+  if (!url.startsWith("/art/")) return null;
+  const thumb = url.replace("/art/", "/art/s/");
+  return { full: url, thumb, srcSet: `${thumb} 240w, ${url} 800w` };
+}
+
 export function slugify(input: string) {
   return input
     .normalize("NFD")

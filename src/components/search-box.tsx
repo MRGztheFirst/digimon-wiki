@@ -119,7 +119,7 @@ export function SearchBox({ compact, placeholder, onPick, autoFocus, className }
         />
       </div>
       {open && q.trim() && (
-        <div id={listId} role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[8px] border border-line bg-surface shadow-xl shadow-black/20">
+        <div id={listId} role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[8px] border border-line bg-surface text-fg shadow-xl shadow-black/20">
           {results.length === 0 ? (
             <div className="px-4 py-3 text-sm text-muted">{loading ? t("Buscando...") : onPick ? t("Nenhum resultado.") : t("Nenhum resultado. Pressione Enter para a busca avançada.")}</div>
           ) : (

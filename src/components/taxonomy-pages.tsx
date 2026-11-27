@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Crown, Users } from "lucide-react";
+import { CalendarDays, Crown, Users } from "lucide-react";
 import { TAXONOMIES, getTaxonomyTerm, listTaxonomy, type TaxonomyKind } from "@/lib/taxonomy";
 import { searchDigimon } from "@/lib/search";
 import { Container, PageHeader, Pagination, Section } from "./ui";
@@ -29,12 +29,22 @@ async function previews(kind: TaxonomyKind): Promise<Map<string, Mon[]>> {
     const rows = await db.group.findMany({ select: { slug: true, members: { where: { digimon: { imageUrl: { not: null } } }, orderBy: { digimon: { number: "asc" } }, take, select: { digimon: { select: mon } } } } });
     return new Map(rows.map((r) => [r.slug, r.members.map((x) => x.digimon)]));
   }
+  if (kind === "anos") {
+    const rows = await db.digimon.findMany({ where: { drbYear: { not: null }, imageUrl: { not: null } }, orderBy: [{ viewCount: "desc" }, { number: "asc" }], select: { ...mon, drbYear: true } });
+    const map = new Map<string, Mon[]>();
+    for (const { drbYear, ...m } of rows) {
+      const list = map.get(String(drbYear)) ?? [];
+      if (list.length < take) map.set(String(drbYear), [...list, m]);
+    }
+    return map;
+  }
   return new Map();
 }
 
 function TermIcon({ kind, slug, name, color, size }: { kind: TaxonomyKind; slug: string; name: string; color?: string | null; size: number }) {
   if (kind === "atributos" && slug !== "no-data") return <AttributeIcon slug={slug} name={name} size={size} />;
   if (kind === "familias") return <FamilyIcon slug={slug} name={name} size={size} />;
+  if (kind === "anos") return <CalendarDays size={size} strokeWidth={1.75} className="shrink-0 text-primary" aria-hidden="true" />;
   return <span className="shrink-0 rounded-[2px]" style={{ width: Math.max(6, size / 4), height: size, background: color ?? "var(--muted)" }} />;
 }
 
@@ -123,6 +133,7 @@ function TermGrid({ items, kind, mons }: { items: Awaited<ReturnType<typeof list
 function Watermark({ kind, slug, name, color, legendary }: { kind: TaxonomyKind; slug: string; name: string; color: string; legendary?: boolean }) {
   if (kind === "atributos" && slug !== "no-data") return <AttributeIcon slug={slug} name={name} size={120} />;
   if (kind === "familias") return <FamilyIcon slug={slug} name={name} size={120} />;
+  if (kind === "anos") return <CalendarDays size={120} strokeWidth={1.5} style={{ color }} />;
   const Icon = legendary ? Crown : Users;
   return <Icon size={120} strokeWidth={1.5} style={{ color }} />;
 }

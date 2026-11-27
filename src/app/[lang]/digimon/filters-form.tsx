@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition } from "react";
 import {
-  ArrowDownUp, ArrowUpFromLine, ArrowUpToLine, BookOpen, ChevronDown, Clapperboard, Filter, Gamepad2,
+  ArrowDownUp, ArrowUpFromLine, ArrowUpToLine, BookOpen, CalendarDays, ChevronDown, Clapperboard, Filter, Gamepad2,
   Hexagon, Layers, Loader2, Search, Shapes, Tag, Users, X, Zap, type LucideIcon,
 } from "lucide-react";
 import type { SearchFilters } from "@/lib/search";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { AttributeIcon, FamilyIcon, hasAttributeIcon, hasFamilyIcon } from "@/components/icons";
 
 type Opt = [value: string, label: string, color?: string | null];
-type SelectKey = "estagio" | "atributo" | "tipo" | "familia" | "grupo" | "jogo" | "anime" | "midia";
+type SelectKey = "estagio" | "atributo" | "tipo" | "familia" | "grupo" | "ano" | "jogo" | "anime" | "midia";
 type Options = Record<SelectKey, Opt[]>;
 type OnPick = (name: string, value: string) => void;
 
@@ -23,6 +23,7 @@ const GROUPS: [title: string, fields: [SelectKey, string, LucideIcon][]][] = [
     ["tipo", "Tipo", Tag],
     ["familia", "Família", Shapes],
     ["grupo", "Grupo / organização", Users],
+    ["ano", "Ano no Reference Book", CalendarDays],
   ]],
   ["Aparições", [
     ["jogo", "Jogo", Gamepad2],

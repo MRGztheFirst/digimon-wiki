@@ -17,11 +17,12 @@ export type SearchFilters = {
   de?: string;
   para?: string;
   grupo?: string;
+  ano?: string;
   ordem?: string;
   pagina?: number;
 };
 
-export const FILTER_KEYS = ["q", "estagio", "atributo", "tipo", "familia", "jogo", "anime", "midia", "habilidade", "de", "para", "grupo", "ordem"] as const;
+export const FILTER_KEYS = ["q", "estagio", "atributo", "tipo", "familia", "jogo", "anime", "midia", "habilidade", "de", "para", "grupo", "ano", "ordem"] as const;
 
 export function buildWhere(f: SearchFilters): Prisma.DigimonWhereInput {
   const and: Prisma.DigimonWhereInput[] = [];
@@ -39,6 +40,7 @@ export function buildWhere(f: SearchFilters): Prisma.DigimonWhereInput {
   if (f.atributo) and.push({ attribute: { slug: f.atributo } });
   if (f.tipo) and.push({ types: { some: { type: { slug: f.tipo } } } });
   if (f.familia) and.push({ families: { some: { family: { slug: f.familia } } } });
+  if (f.ano && /^\d{4}$/.test(f.ano)) and.push({ drbYear: Number(f.ano) });
   if (f.grupo) and.push({ groups: { some: { group: { slug: f.grupo } } } });
   for (const m of [f.jogo, f.anime, f.midia]) {
     if (!m) continue;

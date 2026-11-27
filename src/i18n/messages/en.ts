@@ -545,6 +545,15 @@ const en: Record<string, string> = {
   "Ampliar imagem": "Enlarge image",
   "Fechar": "Close",
   "{n} conexões especiais, agrupadas por tipo. Clique em uma para abrir a árvore.": "{n} special connections, grouped by type. Click one to open its tree.",
+  "Por ano": "By year",
+  "Ano no Reference Book": "Reference Book year",
+  "Os Digimon separados pelo ano em que entraram no Digimon Reference Book, o catálogo oficial da Bandai. Os mais novos costumam aparecer primeiro no card game e nos V-Pets.": "Digimon grouped by the year they were added to the Digimon Reference Book, Bandai's official catalog. The newest ones usually show up first in the card game and the V-Pets.",
+  "Mais recentes": "Newest",
+  "Digimon lançados em {ano}": "Digimon released in {ano}",
+  "No Reference Book desde": "In the Reference Book since",
+  "Novos no Reference Book": "New in the Reference Book",
+  "Os últimos Digimon que entraram no catálogo oficial. Muitos ainda só aparecem no card game.": "The latest Digimon added to the official catalog. Many of them only appear in the card game so far.",
+  "Ver por ano": "See by year",
 };
 
 export default en;

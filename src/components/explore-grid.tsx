@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { artSources, cn } from "@/lib/utils";
 import { AttributeIcon, FamilyIcon } from "@/components/icons";
 
 export type ShowMon = { slug: string; name: string; imageUrl: string | null; stage?: { name: string; color: string } | null };
@@ -35,7 +35,7 @@ const ease = `${motion} duration-500`;
 function Plate({ m, className, flip }: { m?: ShowMon; className?: string; flip?: boolean }) {
   return (
     <span className={cn("plate block shrink-0 overflow-hidden rounded-[6px]", className)}>
-      {m?.imageUrl && <img src={m.imageUrl} alt="" loading="lazy" decoding="async" className={cn("h-full w-full object-contain p-[8%]", flip && "-scale-x-100")} />}
+      {m?.imageUrl && <img src={m.imageUrl} srcSet={artSources(m.imageUrl)?.srcSet} sizes="120px" alt="" loading="lazy" decoding="async" className={cn("h-full w-full object-contain p-[8%]", flip && "-scale-x-100")} />}
     </span>
   );
 }

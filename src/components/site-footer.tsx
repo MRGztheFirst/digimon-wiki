@@ -21,7 +21,7 @@ export function SiteFooter() {
           </p>
         </div>
         <FooterCol title={t("Explorar")} links={[["/digimon", t("Enciclopédia")], ["/linhas", t("Linhas evolutivas")], ["/universos", t("Digimon por Universo")], ["/vantagens", t("Vantagens em batalha")], ["/curiosidades", t("Curiosidades")]]} />
-        <FooterCol title={t("Classificações")} links={[["/estagios", t("Estágios")], ["/atributos", t("Atributos")], ["/tipos", t("Tipos")], ["/familias", t("Famílias")], ["/grupos", t("Grupos")]]} />
+        <FooterCol title={t("Classificações")} links={[["/estagios", t("Estágios")], ["/atributos", t("Atributos")], ["/tipos", t("Tipos")], ["/familias", t("Famílias")], ["/grupos", t("Grupos")], ["/anos", t("Por ano")]]} />
         <FooterCol title={t("Referência")} links={[["/fontes", t("Fontes")], ["/comparar", t("Comparador")], ["/universos/comparar", t("Comparar entre jogos")]]} />
       </div>
       <div className="border-t border-line">

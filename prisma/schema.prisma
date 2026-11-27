@@ -86,6 +86,7 @@ model Digimon {
   powerLevel      String?
   firstAppearance String?
   firstYear       Int?
+  drbYear         Int?
   reviewStatus    String   @default("draft")
   featured        Boolean  @default(false)
   viewCount       Int      @default(0)
@@ -121,6 +122,7 @@ model Digimon {
   @@index([featured])
   @@index([viewCount])
   @@index([createdAt])
+  @@index([drbYear])
 }
 
 model DigimonTypeLink {

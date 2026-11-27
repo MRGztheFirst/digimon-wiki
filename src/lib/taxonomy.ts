@@ -33,6 +33,12 @@ export const TAXONOMIES = {
     filterKey: "grupo",
     intro: "Grupos, ordens e organizações do universo Digimon — incluindo os lendários.",
   },
+  anos: {
+    title: "Por ano",
+    singular: "Ano no Reference Book",
+    filterKey: "ano",
+    intro: "Os Digimon separados pelo ano em que entraram no Digimon Reference Book, o catálogo oficial da Bandai. Os mais novos costumam aparecer primeiro no card game e nos V-Pets.",
+  },
 } as const;
 export type TaxonomyKind = keyof typeof TAXONOMIES;
 
@@ -74,6 +80,15 @@ export async function listTaxonomy(kind: TaxonomyKind): Promise<TaxItem[]> {
       return (await db.group.findMany({ orderBy: [{ legendary: "desc" }, { name: "asc" }], include: { _count: { select: { members: true } } } })).map((g) => ({
         slug: g.slug, name: ln(g), subtitle: ja ? (g.nameJp ? t(g.name) === g.nameJp ? null : t(g.name) : null) : g.nameJp, description: td(g.description), color: g.legendary ? "#facc15" : "#94a3b8", count: g._count.members, legendary: g.legendary,
       }));
+    case "anos": {
+      const years = await db.digimon.groupBy({ by: ["drbYear"], where: { drbYear: { not: null } }, _count: { _all: true }, orderBy: { drbYear: "desc" } });
+      const newest = years[0]?.drbYear;
+      return years.map((y) => ({
+        slug: String(y.drbYear), name: String(y.drbYear),
+        subtitle: y.drbYear === newest ? t("Mais recentes") : null,
+        color: "var(--primary)", count: y._count._all,
+      }));
+    }
   }
 }
 

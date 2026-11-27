@@ -59,7 +59,7 @@ function TaxonRow({ href, color, share, count, icon, title, sub }: {
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
   await localeFromParams(params);
   const { locale, t, td, ln, num: fmt } = await getI18n();
-  const [counts, featured, popular, recent, random, stages, attributes, types, families, media, lineRoots, quick, showcase] = await Promise.all([
+  const [counts, featured, popular, recent, random, stages, attributes, types, families, media, lineRoots, quick, showcase, newest] = await Promise.all([
     Promise.all([db.digimon.count(), db.evolution.count(), db.media.count(), db.digimonType.count()]),
     db.digimon.findMany({ where: { featured: true, imageUrl: { not: null } }, select: { ...cardSelect, summary: true, romaji: true } }),
     db.digimon.findMany({ select: cardSelect, take: 6, orderBy: [{ viewCount: "desc" }, { number: "asc" }] }),
@@ -73,6 +73,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     db.digimon.findMany({ where: { slug: { in: POPULAR_LINES } }, select: { ...cardSelect, _count: { select: { evolutionsFrom: true, evolutionsTo: true } } } }),
     db.digimon.findMany({ where: { slug: { in: QUICK } }, select: { slug: true, name: true } }),
     db.digimon.findMany({ where: { slug: { in: SHOWCASE }, imageUrl: { not: null } }, select: { slug: true, name: true, imageUrl: true, stage: { select: { name: true, color: true } } } }),
+    db.digimon.findMany({ where: { drbYear: { not: null } }, select: cardSelect, take: 12, orderBy: [{ drbYear: "desc" }, { viewCount: "desc" }, { number: "asc" }] }),
   ]);
   const [nDigimon, nEvo, nMedia, nTypes] = counts;
   const spot = featured.length ? featured[Math.floor(Math.random() * featured.length)] : null;
@@ -169,6 +170,12 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             ))}
           </div>
         </Section>
+
+        {newest.length > 0 && (
+          <Section title={t("Novos no Reference Book")} description={t("Os últimos Digimon que entraram no catálogo oficial. Muitos ainda só aparecem no card game.")} action={<SeeAll href="/anos">{t("Ver por ano")}</SeeAll>}>
+            <DigimonGrid items={newest} />
+          </Section>
+        )}
 
         <div className="grid gap-16 lg:grid-cols-2">
           <Section title={t("Mais vistos")} action={<SeeAll href="/digimon?ordem=populares" />}>

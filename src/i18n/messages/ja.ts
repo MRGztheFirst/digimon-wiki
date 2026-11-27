@@ -545,6 +545,15 @@ const ja: Record<string, string> = {
   "Ampliar imagem": "画像を拡大",
   "Fechar": "閉じる",
   "{n} conexões especiais, agrupadas por tipo. Clique em uma para abrir a árvore.": "特殊な進化 {n} 件（種類別）。クリックするとツリーを開きます。",
+  "Por ano": "年別",
+  "Ano no Reference Book": "図鑑登録年",
+  "Os Digimon separados pelo ano em que entraram no Digimon Reference Book, o catálogo oficial da Bandai. Os mais novos costumam aparecer primeiro no card game e nos V-Pets.": "バンダイ公式のデジモン図鑑に登録された年ごとにデジモンを分類。新しいデジモンはまずカードゲームやV-Petで登場することが多い。",
+  "Mais recentes": "最新",
+  "Digimon lançados em {ano}": "{ano}年に登場したデジモン",
+  "No Reference Book desde": "図鑑登録年",
+  "Novos no Reference Book": "デジモン図鑑の新着",
+  "Os últimos Digimon que entraram no catálogo oficial. Muitos ainda só aparecem no card game.": "公式図鑑に最近追加されたデジモン。多くはまだカードゲームにしか登場していない。",
+  "Ver por ano": "年別に見る",
 };
 
 export default ja;

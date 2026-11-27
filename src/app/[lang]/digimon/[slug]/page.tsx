@@ -199,6 +199,7 @@ export default async function DigimonPage({ params }: { params: Promise<{ lang: 
                 <Field label={t("Significado do nome")}>{td(d.nameMeaning)}</Field>
                 <Field label={t("Origem do design")}>{td(d.designOrigin)}</Field>
                 <Field label={t("Primeira aparição")}>{d.firstAppearance && `${td(d.firstAppearance)}${d.firstYear ? ` (${d.firstYear})` : ""}`}</Field>
+                <Field label={t("No Reference Book desde")}>{d.drbYear && <Link href={`/anos/${d.drbYear}`} className="text-accent hover:underline">{d.drbYear}</Link>}</Field>
               </dl>
             </div>
           </Section>

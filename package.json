@@ -11,13 +11,14 @@
     "postinstall": "prisma generate",
     "db:push": "prisma db push && prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma db push --force-reset && prisma generate && tsx prisma/seed.ts && npm run db:import && tsx prisma/import-images.ts",
-    "setup": "prisma db push && prisma generate && tsx prisma/seed.ts && npm run db:import && tsx prisma/import-images.ts",
+    "db:reset": "prisma db push --force-reset && prisma generate && tsx prisma/seed.ts && npm run db:import && tsx prisma/import-images.ts && npm run db:art",
+    "setup": "prisma db push && prisma generate && tsx prisma/seed.ts && npm run db:import && tsx prisma/import-images.ts && npm run db:art",
     "db:images": "tsx prisma/import-images.ts",
+    "db:art": "tsx prisma/import-wikimon-art.ts",
     "preview": "next build && next start -p 3001",
     "db:fetch": "tsx prisma/fetch-digiapi.ts",
     "db:import": "tsx prisma/fetch-digiapi.ts && tsx prisma/import-digiapi.ts && npm run db:wikimon",
-    "db:wikimon": "tsx prisma/fetch-wikimon.ts && tsx prisma/import-wikimon.ts"
+    "db:wikimon": "tsx prisma/fetch-wikimon.ts && tsx prisma/import-wikimon.ts && tsx prisma/import-wikimon-drb.ts"
   },
   "dependencies": {
     "@fontsource/chakra-petch": "^5.3.0",

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { artSources, cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/client";
 
 type Props = {
@@ -23,9 +23,14 @@ export function DigimonAvatar({ name, imageUrl, color, className, rounded, strip
   const radius = rounded === "rounded-none" ? "rounded-none" : "rounded-[4px]";
   const fixed = /^\d+px$/.test(sizes) ? parseInt(sizes, 10) : null;
   const dims = fixed ? { width: fixed, height: fixed } : { fill: true, sizes };
+  const art = imageUrl ? artSources(imageUrl) : null;
   return (
     <div className={cn("plate relative overflow-hidden", radius, className)}>
-      {imageUrl ? (
+      {art ? (
+        <img src={art.full} srcSet={art.srcSet} sizes={sizes} alt={name} width={fixed ?? undefined} height={fixed ?? undefined}
+          loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : undefined} decoding="async"
+          className="absolute inset-0 h-full w-full object-contain p-[6%]" />
+      ) : imageUrl ? (
         <Image src={imageUrl} alt={name} {...dims} priority={priority} unoptimized={!OPTIMIZED.some((p) => imageUrl.startsWith(p))}
           className={cn("object-contain p-[6%]", fixed !== null && "absolute inset-0 h-full w-full")} />
       ) : (
