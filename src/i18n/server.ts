@@ -3,6 +3,7 @@ import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, localeFromAcceptLanguage, makeTranslate, type Locale, type Messages } from "./config";
 import { uiMessages } from "./messages";
+import { translateImported } from "./imported";
 import contentEn from "./content/en.json";
 import contentJa from "./content/ja.json";
 
@@ -33,7 +34,11 @@ type Named = { name: string; nameJp?: string | null };
 export const getI18n = cache(async () => {
   const locale = await getLocale();
   const t = makeTranslate(uiMessages[locale], contentMessages[locale]);
-  const td = <T extends string | null | undefined>(v: T): T => (v ? (t(v) as T) : v);
+  const td = <T extends string | null | undefined>(v: T): T => {
+    if (!v) return v;
+    const out = t(v);
+    return (out !== v ? out : translateImported(v, locale)) as T;
+  };
   const ln = (e: Named) => (locale === "ja" && e.nameJp ? e.nameJp : t(e.name));
   const num = (n: number) => n.toLocaleString(locale === "pt" ? "pt-BR" : locale);
   return { locale, t, td, ln, num };
