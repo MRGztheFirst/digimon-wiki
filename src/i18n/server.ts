@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, localeFromAcceptLanguage, makeTranslate, type Locale, type Messages } from "./config";
 import { uiMessages } from "./messages";
 import { translateImported } from "./imported";
+import { translateAttack } from "./attacks";
 import contentEn from "./content/en.json";
 import contentJa from "./content/ja.json";
 
@@ -37,7 +38,9 @@ export const getI18n = cache(async () => {
   const td = <T extends string | null | undefined>(v: T): T => {
     if (!v) return v;
     const out = t(v);
-    return (out !== v ? out : translateImported(v, locale)) as T;
+    if (out !== v) return out as T;
+    const attack = translateAttack(v, locale);
+    return (attack !== v ? attack : translateImported(v, locale)) as T;
   };
   const ln = (e: Named) => (locale === "ja" && e.nameJp ? e.nameJp : t(e.name));
   const num = (n: number) => n.toLocaleString(locale === "pt" ? "pt-BR" : locale);

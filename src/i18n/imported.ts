@@ -207,11 +207,16 @@ function part(text: string, lang: Lang): string {
   if (without) return lang === "pt" ? `sem ${list(without[1], lang)}` : `${list(without[1], lang)}なしで`;
   const withs = t.match(/^with\s+(.+)$/);
   if (withs) return lang === "pt" ? `com ${list(withs[1], lang)}` : `${list(withs[1], lang)}と`;
-  return list(t, lang);
+  return EVOLUTION_LIST.test(t) ? list(t, lang) : t;
 }
 
+const EVOLUTION_LIST = /^(?:[A-Z][\w-]*\s+)+Evolution(?:,?\s+(?:or|and)\s+(?:[A-Z][\w-]*\s+)+Evolution)*$/;
+const REQUIREMENT = /^(?:(?:with|With|without|including|Jogress|Jogressed|DigiXros)\b|(?:[A-Z][\w-]*\s+)+Evolution\b)/;
+
 export function translateImported(text: string, locale: Locale): string {
-  if (locale === "en" || !/\b(?:with|With|without|including|Evolution|Jogress|Jogressed|DigiXros)\b/.test(text)) return text;
+  if (locale === "en") return text;
+  const parts = text.split(" / ");
+  if (!parts.every((p) => REQUIREMENT.test(p.trim()))) return text;
   const lang: Lang = locale === "ja" ? "ja" : "pt";
-  return text.split(" / ").map((p) => part(p, lang)).join(" / ");
+  return parts.map((p) => part(p, lang)).join(" / ");
 }
