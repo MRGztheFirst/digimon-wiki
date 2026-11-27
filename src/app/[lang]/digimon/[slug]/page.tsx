@@ -369,7 +369,7 @@ async function EvoColumn({ title, icon, items, self, direction }: {
 }) {
   const { t, td, ln } = await getI18n();
   const curated = items.filter((e) => !e.imported);
-  const listed = items.filter((e) => e.imported);
+  const listed = items.filter((e) => e.imported).sort((a, b) => b.contexts.length - a.contexts.length || a.target.name.localeCompare(b.target.name));
   const plain = listed.filter((e) => e.kind === "normal" && !e.requirements);
   const annotated = listed.filter((e) => e.kind !== "normal" || e.requirements);
   const toggle = "cursor-pointer rounded-full border border-dashed border-line px-2 py-0.5 text-[11px] font-medium text-muted transition-colors hover:border-primary/60 hover:text-primary peer-focus-visible:border-primary peer-focus-visible:text-primary";

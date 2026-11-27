@@ -1,7 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createPrisma } from "./client";
-import { PAGES_FILE, type PageCache } from "./fetch-wikimon";
+import { PAGES_FILE, wikimonTitle, type PageCache } from "./fetch-wikimon";
 
 const prisma = createPrisma();
 
@@ -78,7 +78,7 @@ async function main() {
   const byName = new Map<string, number>();
   for (const d of digimon) if (!byName.has(norm(d.name))) byName.set(norm(d.name), d.id);
   for (const d of digimon) {
-    const title = pages?.titles[d.name] ?? "";
+    const title = (pages && wikimonTitle(pages, d.name)) ?? "";
     const text = pages?.pages[title] ?? "";
     const dubs = [...text.matchAll(/^\|dub\d*=([^\n{<[]+)/gm)].map((m) => m[1].trim());
     for (const n of [...(d.otherNames?.split(",") ?? []), title, ...dubs]) {

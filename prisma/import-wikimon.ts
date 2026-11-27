@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { createPrisma } from "./client";
-import { MEDIA_FILE, PAGES_FILE, type MediaCache, type PageCache } from "./fetch-wikimon";
+import { MEDIA_FILE, PAGES_FILE, wikimonTitle, type MediaCache, type PageCache } from "./fetch-wikimon";
+import { importWikimonInfo } from "./import-wikimon-info";
 
 const prisma = createPrisma();
 
@@ -157,6 +158,7 @@ async function main() {
 
   const wikimon = await prisma.source.findFirst({ where: { kind: "wikimon", title: "Wikimon" } });
   if (!wikimon) throw new Error('Fonte "Wikimon" não encontrada. Rode "npm run db:seed" antes.');
+  await importWikimonInfo(prisma, pages);
   const source =
     (await prisma.source.findFirst({ where: { title: SOURCE_TITLE } })) ??
     (await prisma.source.create({ data: { title: SOURCE_TITLE, url: "https://wikimon.net", publisher: "Comunidade Wikimon", kind: "wikimon", notes: "Listas Evolves From / Evolves To de cada Digimon, com a obra citada em cada referência." } }));
@@ -169,7 +171,7 @@ async function main() {
   const byTitle = new Map<string, number>();
   const byName = new Map<string, number>();
   for (const d of digimon) {
-    const title = pages.titles[d.name];
+    const title = wikimonTitle(pages, d.name);
     if (title && (!byTitle.has(norm(title)) || norm(title) === norm(d.name))) byTitle.set(norm(title), d.id);
     for (const n of [d.name, ...(d.otherNames?.split(",") ?? [])]) if (n.trim() && !byName.has(norm(n))) byName.set(norm(n), d.id);
   }

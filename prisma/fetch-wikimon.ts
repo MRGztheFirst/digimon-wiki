@@ -14,6 +14,19 @@ export type MediaCache = Record<string, { title: string; categories: string[] }>
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+const titleIndex = new WeakMap<PageCache, Map<string, string>>();
+const key = (s: string) => s.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+export function wikimonTitle(cache: PageCache, name: string): string | undefined {
+  if (name in cache.titles) return cache.titles[name];
+  let index = titleIndex.get(cache);
+  if (!index) {
+    index = new Map(Object.entries(cache.titles).map(([n, t]) => [key(n), t]));
+    titleIndex.set(cache, index);
+  }
+  return index.get(key(name));
+}
+
 async function api(params: Record<string, string>, tries = 5): Promise<any> {
   const qs = new URLSearchParams({ format: "json", formatversion: "2", maxlag: "5", ...params });
   for (let i = 1; ; i++) {
@@ -62,7 +75,7 @@ export function mediaTitles(cache: PageCache) {
 
 async function fetchPages(names: string[]) {
   const cache = await readJson<PageCache>(PAGES_FILE, { titles: {}, pages: {} });
-  const todo = names.filter((n) => !(n in cache.titles));
+  const todo = names.filter((n) => wikimonTitle(cache, n) === undefined);
   console.log(`Wikimon: ${names.length} Digimon, ${names.length - todo.length} já no cache, baixando ${todo.length}...`);
   for (let i = 0; i < todo.length; i += BATCH) {
     const asked = todo.slice(i, i + BATCH);
